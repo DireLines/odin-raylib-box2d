@@ -41,6 +41,8 @@ main :: proc() {
 	width :: 1280
 	height :: 720
 
+	rl.SetTraceLogLevel(.NONE) //shup up
+
 	rl.InitWindow(width, height, "odin-raylib-box2d")
 	defer rl.CloseWindow()
 
@@ -115,6 +117,15 @@ main :: proc() {
 				36,
 				rl.LIGHTGRAY,
 			)
+			if pause {
+				rl.DrawText(
+					"~~paused~~",
+					(width - rl.MeasureText("~~paused~~", 20)) / 2,
+					100,
+					20,
+					rl.LIGHTGRAY,
+				)
+			}
 
 			for &entity, i in ground_entities {
 				draw_entity(&entity, cv)
