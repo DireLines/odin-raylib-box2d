@@ -4,32 +4,20 @@ import "core:fmt"
 import b2 "vendor:box2d"
 import rl "vendor:raylib"
 
-Conversion :: struct {
-	scale:         f32,
-	tile_size:     f32,
-	screen_width:  f32,
-	screen_height: f32,
-}
-
-Entity :: struct {
-	body_id: b2.BodyId,
-	texture: rl.Texture,
-}
-
 convert_world_to_screen :: proc(p: b2.Vec2, cv: Conversion) -> rl.Vector2 {
 	return {cv.scale * p.x + 0.5 * cv.screen_width, 0.5 * cv.screen_height - cv.scale * p.y}
 }
 
-draw_entity :: proc(entity: ^Entity, cv: Conversion) {
-	p := b2.Body_GetWorldPoint(entity.body_id, {-0.5 * cv.tile_size, 0.5 * cv.tile_size})
-	radians := b2.Body_GetRotation(entity.body_id)
+draw_object :: proc(obj: ^GameObject, cv: Conversion) {
+	p := b2.Body_GetWorldPoint(obj.body_id, {-0.5 * cv.tile_size, 0.5 * cv.tile_size})
+	radians := b2.Body_GetRotation(obj.body_id)
 
 	ps := convert_world_to_screen(p, cv)
 
-	texture_scale := cv.tile_size * cv.scale / f32(entity.texture.width)
+	texture_scale := cv.tile_size * cv.scale / f32(obj.image.width)
 
 	rl.DrawTextureEx(
-		entity.texture,
+		obj.image^,
 		ps,
 		-rl.RAD2DEG * b2.Rot_GetAngle(radians),
 		texture_scale,
@@ -43,7 +31,7 @@ main :: proc() {
 
 	rl.SetTraceLogLevel(.NONE) //shup up
 
-	rl.InitWindow(width, height, "odin-raylib-box2d")
+	rl.InitWindow(width, height, "odin+raylib+box2d game template")
 	defer rl.CloseWindow()
 
 	rl.SetTargetFPS(60)
@@ -62,30 +50,30 @@ main :: proc() {
 
 	tile_polygon := b2.MakeSquare(0.5 * tile_size)
 
-	ground_entities := make([]Entity, 20)
+	ground := make([]GameObject, 20)
 
-	for &entity, i in ground_entities {
+	for &ground_obj, i in ground {
 		body_def := b2.DefaultBodyDef()
 		body_def.position = {f32(1 * i - 10) * tile_size, -4.5 - 0.5 * tile_size}
 
-		entity.body_id = b2.CreateBody(world_id, body_def)
-		entity.texture = ground_texture
+		ground_obj.body_id = b2.CreateBody(world_id, body_def)
+		ground_obj.image = &ground_texture
 		shape_def := b2.DefaultShapeDef()
-		shape_id := b2.CreatePolygonShape(entity.body_id, shape_def, tile_polygon)
+		shape_id := b2.CreatePolygonShape(ground_obj.body_id, shape_def, tile_polygon)
 	}
 
-	box_entities := make([]Entity, 3)
+	boxes := make([]GameObject, 3)
 
-	for &entity, i in box_entities {
+	for &box, i in boxes {
 		body_def := b2.DefaultBodyDef()
 		body_def.type = .dynamicBody
 		body_def.position = {0, -4.0 + tile_size * f32(i + 7)}
-		entity.body_id = b2.CreateBody(world_id, body_def)
-		entity.texture = box_texture
+		box.body_id = b2.CreateBody(world_id, body_def)
+		box.image = &box_texture
 
 		shape_def := b2.DefaultShapeDef()
 		shape_def.restitution = 0.5
-		shape_id := b2.CreatePolygonShape(entity.body_id, shape_def, tile_polygon)
+		shape_id := b2.CreatePolygonShape(box.body_id, shape_def, tile_polygon)
 	}
 
 	pause := false
@@ -127,12 +115,12 @@ main :: proc() {
 				)
 			}
 
-			for &entity, i in ground_entities {
-				draw_entity(&entity, cv)
+			for &ground_obj, i in ground {
+				draw_object(&ground_obj, cv)
 			}
 
-			for &entity, i in box_entities {
-				draw_entity(&entity, cv)
+			for &box, i in boxes {
+				draw_object(&box, cv)
 			}
 		}
 	}
