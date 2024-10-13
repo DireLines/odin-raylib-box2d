@@ -27,7 +27,8 @@ unload_texture :: proc(game: ^Game, fileName: string) {
 		rl.UnloadTexture(texture)
 	}
 }
-draw_object :: proc(obj: ^GameObject) {
+draw_object :: proc(game: ^Game, obj_index: int) {
+	obj := game.objects[obj_index]
 	p := b2.Body_GetWorldPoint(obj.body_id, {-0.5 * cv.tile_size, 0.5 * cv.tile_size})
 	radians := b2.Body_GetRotation(obj.body_id)
 
@@ -46,6 +47,7 @@ draw_object :: proc(obj: ^GameObject) {
 init_game :: proc(game: ^Game) {
 	game.window_width = WINDOW_WIDTH
 	game.window_height = WINDOW_HEIGHT
+	game.objects = make_soa(#soa[dynamic]GameObject)
 
 	//raylib init
 	rl.SetTraceLogLevel(.NONE) //shup up
@@ -63,7 +65,7 @@ deinit_game :: proc(game: ^Game) {
 	rl.CloseWindow()
 }
 add_object :: proc(game: ^Game, obj: GameObject) {
-	append(&game.objects, obj)
+	append_soa(&game.objects, obj)
 }
 initialize :: proc(game: ^Game) {
 	ground_tex_file := "assets/ground.png"
@@ -134,8 +136,8 @@ start_game :: proc(game: ^Game) {
 				)
 			}
 
-			for &obj in game.objects {
-				draw_object(&obj)
+			for _, i in game.objects {
+				draw_object(game, i)
 			}
 			timer->time("render")
 		}

@@ -18,7 +18,7 @@ ScreenConversion :: struct {
 Game :: struct {
 	window_width:  i32,
 	window_height: i32,
-	objects:       [dynamic]GameObject,
+	objects:       #soa[dynamic]GameObject,
 	textures:      map[string]rl.Texture,
 	start_tick:    time.Tick,
 	frame_counter: u64,
@@ -40,7 +40,7 @@ GameObject :: struct {
 	component_set: bit_set[Component],
 	parent:        Maybe(GameObjectId),
 	children:      []GameObjectId,
-	body_id:       b2.BodyId,
+	body_id:       b2.BodyId, //box2d handle - box2d handles transform / physics
 	using sprite:  Sprite,
 	using script:  Script,
 }
