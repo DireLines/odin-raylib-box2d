@@ -73,7 +73,7 @@ initialize :: proc(game: ^Game) {
 	load_texture(game, box_tex_file)
 	tile_polygon := b2.MakeSquare(0.5 * tile_size)
 
-	for i in 0 ..< 20 {
+	for i in 0 ..= 20 {
 		ground_obj := GameObject{}
 		body_def := b2.DefaultBodyDef()
 		body_def.position = {f32(1 * i - 10) * tile_size, -4.5 - 0.5 * tile_size}
@@ -123,13 +123,6 @@ start_game :: proc(game: ^Game) {
 
 			rl.ClearBackground(rl.DARKGRAY)
 
-			rl.DrawText(
-				"Hello, Box2D!",
-				(game.window_width - rl.MeasureText("Hello Box2D", 36)) / 2,
-				50,
-				36,
-				rl.LIGHTGRAY,
-			)
 			if pause {
 				rl.DrawText(
 					"~~paused~~",
