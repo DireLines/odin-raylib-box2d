@@ -8,7 +8,7 @@ vec2 :: [2]f32
 mat3 :: matrix[3, 3]f32
 
 
-Conversion :: struct {
+ScreenConversion :: struct {
 	scale:         f32,
 	tile_size:     f32,
 	screen_width:  f32,
@@ -20,12 +20,11 @@ Game :: struct {
 	window_width:  i32,
 	window_height: i32,
 	objects:       [dynamic]GameObject,
-	systems:       [dynamic]^System,
 	textures:      map[string]rl.Texture,
 	start_tick:    time.Tick,
 	frame_counter: u64,
+	world_id:      b2.WorldId,
 }
-
 
 Component :: enum {
 	Transform,
@@ -36,32 +35,15 @@ Component :: enum {
 	Script,
 	Children,
 }
-
+GameObjectId :: distinct uint
 GameObject :: struct {
 	name:          string,
 	component_set: bit_set[Component],
-	parent:        ^GameObject,
-	children:      [dynamic]^GameObject,
+	parent:        Maybe(GameObjectId),
+	children:      []GameObjectId,
 	body_id:       b2.BodyId,
 	using sprite:  Sprite,
 	using script:  Script,
-}
-
-
-Transform :: struct {
-	position: vec2,
-	scale:    vec2,
-	pivot:    vec2,
-	rotation: f32,
-}
-
-Rigidbody :: struct {
-	mass:              f32,
-	moment_of_inertia: f32,
-	velocity:          vec2,
-	angular_velocity:  f32,
-	force:             vec2,
-	torque:            f32,
 }
 
 Sprite :: struct {
