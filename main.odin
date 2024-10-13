@@ -27,7 +27,7 @@ unload_texture :: proc(game: ^Game, fileName: string) {
 		rl.UnloadTexture(texture)
 	}
 }
-draw_object :: proc(obj: ^GameObject, cv: ScreenConversion) {
+draw_object :: proc(obj: ^GameObject) {
 	p := b2.Body_GetWorldPoint(obj.body_id, {-0.5 * cv.tile_size, 0.5 * cv.tile_size})
 	radians := b2.Body_GetRotation(obj.body_id)
 
@@ -40,7 +40,7 @@ draw_object :: proc(obj: ^GameObject, cv: ScreenConversion) {
 		ps,
 		-rl.RAD2DEG * b2.Rot_GetAngle(radians),
 		texture_scale,
-		rl.WHITE,
+		obj.color,
 	)
 }
 init_game :: proc(game: ^Game) {
@@ -78,6 +78,7 @@ initialize :: proc(game: ^Game) {
 		body_def.position = {f32(1 * i - 10) * tile_size, -4.5 - 0.5 * tile_size}
 		ground_obj.body_id = b2.CreateBody(game.world_id, body_def)
 		ground_obj.image = &game.textures[ground_tex_file]
+		ground_obj.color = rl.WHITE
 		shape_def := b2.DefaultShapeDef()
 		shape_id := b2.CreatePolygonShape(ground_obj.body_id, shape_def, tile_polygon)
 		add_object(game, ground_obj)
@@ -90,7 +91,7 @@ initialize :: proc(game: ^Game) {
 		body_def.position = {0, -4.0 + tile_size * f32(i + 7)}
 		box.body_id = b2.CreateBody(game.world_id, body_def)
 		box.image = &game.textures[box_tex_file]
-
+		box.color = rl.WHITE
 		shape_def := b2.DefaultShapeDef()
 		shape_def.restitution = 0.5
 		shape_id := b2.CreatePolygonShape(box.body_id, shape_def, tile_polygon)
@@ -131,8 +132,8 @@ start_game :: proc(game: ^Game) {
 				)
 			}
 
-			for &obj, i in game.objects {
-				draw_object(&obj, cv)
+			for &obj in game.objects {
+				draw_object(&obj)
 			}
 			timer->time("render")
 		}
