@@ -72,30 +72,32 @@ initialize :: proc(game: ^Game) {
 	load_texture(game, box_tex_file)
 	tile_polygon := b2.MakeSquare(0.5 * tile_size)
 
+	//ground
 	for i in 0 ..= 20 {
-		ground_obj := GameObject{}
+		obj := GameObject{}
 		body_def := b2.DefaultBodyDef()
 		body_def.position = {f32(1 * i - 10) * tile_size, -4.5 - 0.5 * tile_size}
-		ground_obj.body_id = b2.CreateBody(game.world_id, body_def)
-		ground_obj.image = &game.textures[ground_tex_file]
-		ground_obj.color = rl.WHITE
+		obj.body_id = b2.CreateBody(game.world_id, body_def)
+		obj.image = &game.textures[ground_tex_file]
+		obj.color = rl.WHITE
 		shape_def := b2.DefaultShapeDef()
-		shape_id := b2.CreatePolygonShape(ground_obj.body_id, shape_def, tile_polygon)
-		add_object(game, ground_obj)
+		shape_id := b2.CreatePolygonShape(obj.body_id, shape_def, tile_polygon)
+		add_object(game, obj)
 	}
 
+	//boxes
 	for i in 0 ..< 3 {
-		box := GameObject{}
+		obj := GameObject{}
 		body_def := b2.DefaultBodyDef()
 		body_def.type = .dynamicBody
 		body_def.position = {0, -4.0 + tile_size * f32(i + 7)}
-		box.body_id = b2.CreateBody(game.world_id, body_def)
-		box.image = &game.textures[box_tex_file]
-		box.color = rl.WHITE
+		obj.body_id = b2.CreateBody(game.world_id, body_def)
+		obj.image = &game.textures[box_tex_file]
+		obj.color = rl.WHITE
 		shape_def := b2.DefaultShapeDef()
 		shape_def.restitution = 0.5
-		shape_id := b2.CreatePolygonShape(box.body_id, shape_def, tile_polygon)
-		add_object(game, box)
+		shape_id := b2.CreatePolygonShape(obj.body_id, shape_def, tile_polygon)
+		add_object(game, obj)
 	}
 }
 start_game :: proc(game: ^Game) {
