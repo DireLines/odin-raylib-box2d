@@ -16,7 +16,6 @@ ScreenConversion :: struct {
 }
 
 Game :: struct {
-	id_generator:  IDGenerator,
 	window_width:  i32,
 	window_height: i32,
 	objects:       [dynamic]GameObject,
@@ -59,18 +58,6 @@ Script :: struct {
 	on_collision_enter: proc(self_index: int, other_index: int, game: ^Game),
 	on_collision_stay:  proc(self_index: int, other_index: int, game: ^Game),
 	on_collision_exit:  proc(self_index: int, other_index: int, game: ^Game),
-}
-
-
-IDGenerator :: struct {
-	id:   int,
-	next: proc(_: ^IDGenerator) -> int,
-}
-id_generator :: proc() -> IDGenerator {
-	return IDGenerator{id = 0, next = proc(gen: ^IDGenerator) -> int {
-			gen.id += 1
-			return gen.id
-		}}
 }
 
 System :: struct {

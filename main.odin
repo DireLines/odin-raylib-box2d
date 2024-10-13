@@ -44,7 +44,6 @@ draw_object :: proc(obj: ^GameObject, cv: ScreenConversion) {
 	)
 }
 init_game :: proc(game: ^Game) {
-	game.id_generator = id_generator()
 	game.window_width = WINDOW_WIDTH
 	game.window_height = WINDOW_HEIGHT
 
@@ -83,7 +82,6 @@ initialize :: proc(game: ^Game) {
 		shape_id := b2.CreatePolygonShape(ground_obj.body_id, shape_def, tile_polygon)
 		add_object(game, ground_obj)
 	}
-
 
 	for i in 0 ..< 3 {
 		box := GameObject{}
