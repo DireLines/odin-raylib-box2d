@@ -36,7 +36,7 @@ draw_object :: proc(obj: GameObject) {
 	texture_scale := cv.tile_size * cv.scale / f32(obj.sprite.image.width)
 
 	rl.DrawTextureEx(
-		obj.sprite.image^,
+		obj.sprite.image,
 		ps,
 		-rl.RAD2DEG * b2.Rot_GetAngle(radians),
 		texture_scale,
@@ -67,10 +67,8 @@ add_object :: proc(game: ^Game, obj: GameObject) {
 	append_soa(&game.objects, obj)
 }
 initialize :: proc(game: ^Game) {
-	ground_tex_file := "assets/ground.png"
-	load_texture(game, ground_tex_file)
-	box_tex_file := "assets/box.png"
-	load_texture(game, box_tex_file)
+	ground_texture := load_texture(game, "assets/ground.png")
+	box_texture := load_texture(game, "assets/box.png")
 	tile_polygon := b2.MakeSquare(0.5 * tile_size)
 
 	//ground
@@ -79,7 +77,7 @@ initialize :: proc(game: ^Game) {
 		body_def := b2.DefaultBodyDef()
 		body_def.position = {f32(1 * i - 10) * tile_size, -4.5 - 0.5 * tile_size}
 		obj.body_id = b2.CreateBody(game.world_id, body_def)
-		obj.sprite.image = &game.textures[ground_tex_file]
+		obj.sprite.image = ground_texture
 		obj.sprite.color = rl.WHITE
 		shape_def := b2.DefaultShapeDef()
 		shape_id := b2.CreatePolygonShape(obj.body_id, shape_def, tile_polygon)
@@ -93,7 +91,7 @@ initialize :: proc(game: ^Game) {
 		body_def.type = .dynamicBody
 		body_def.position = {0, -4.0 + tile_size * f32(i + 7)}
 		obj.body_id = b2.CreateBody(game.world_id, body_def)
-		obj.sprite.image = &game.textures[box_tex_file]
+		obj.sprite.image = box_texture
 		obj.sprite.color = rl.WHITE
 		shape_def := b2.DefaultShapeDef()
 		shape_def.restitution = 0.5

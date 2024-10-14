@@ -50,7 +50,7 @@ Sprite :: struct {
 	file:  string,
 	z:     f32, // rendering order
 	color: rl.Color,
-	image: ^rl.Texture,
+	image: rl.Texture,
 }
 Script :: struct {
 	awake:              proc(self_index: int, game: ^Game),
