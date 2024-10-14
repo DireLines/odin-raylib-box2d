@@ -8,7 +8,7 @@ import rl "vendor:raylib"
 WINDOW_WIDTH :: 1280
 WINDOW_HEIGHT :: 720
 tile_size: f32 : 1.0
-scale: f32 : 50.0
+scale: f32 : 25.0
 //screen transformation
 cv :: ScreenConversion{scale, tile_size, f32(WINDOW_WIDTH), f32(WINDOW_HEIGHT)}
 
@@ -89,11 +89,13 @@ initialize :: proc(game: ^Game) {
 	}
 
 	//boxes
-	for i in 0 ..< 300 {
+	for i in 0 ..< 6000 {
+		x := i % 21
+		y := i / 21
 		obj := GameObject{}
 		body_def := b2.DefaultBodyDef()
 		body_def.type = .dynamicBody
-		body_def.position = {0, -4.0 + tile_size * f32(i + 7)}
+		body_def.position = {f32(1 * x - 10) * tile_size, -4.0 + tile_size * f32(y + 7)}
 		obj.body_id = b2.CreateBody(game.world_id, body_def)
 		obj.sprite.image = get_texture(game, "assets/box.png")
 		obj.sprite.color = rl.WHITE
@@ -121,7 +123,7 @@ render :: proc(game: ^Game) {
 			rl.LIGHTGRAY,
 		)
 	}
-	timer->time("actual render")
+	timer->time("render")
 }
 
 start_game :: proc(game: ^Game) {
@@ -141,7 +143,6 @@ start_game :: proc(game: ^Game) {
 			// }
 		}
 		render(game)
-		timer->time("render")
 	}
 }
 
