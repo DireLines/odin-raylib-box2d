@@ -15,14 +15,20 @@ cv :: ScreenConversion{scale, tile_size, f32(WINDOW_WIDTH), f32(WINDOW_HEIGHT)}
 convert_world_to_screen :: proc(p: b2.Vec2, cv: ScreenConversion) -> rl.Vector2 {
 	return {cv.scale * p.x + 0.5 * cv.screen_width, 0.5 * cv.screen_height - cv.scale * p.y}
 }
-
-load_texture :: proc(game: ^Game, fileName: string) -> rl.Texture2D {
-	texture := rl.LoadTexture(strings.clone_to_cstring(fileName))
-	game.textures[fileName] = texture
+get_texture :: proc(game: ^Game, filename: string) -> rl.Texture2D {
+	texture, ok := game.textures[filename]
+	if ok {
+		return texture
+	}
+	return load_texture(game, filename)
+}
+load_texture :: proc(game: ^Game, filename: string) -> rl.Texture2D {
+	texture := rl.LoadTexture(strings.clone_to_cstring(filename))
+	game.textures[filename] = texture
 	return texture
 }
-unload_texture :: proc(game: ^Game, fileName: string) {
-	texture, ok := game.textures[fileName]
+unload_texture :: proc(game: ^Game, filename: string) {
+	texture, ok := game.textures[filename]
 	if ok {
 		rl.UnloadTexture(texture)
 	}
@@ -67,8 +73,6 @@ add_object :: proc(game: ^Game, obj: GameObject) {
 	append_soa(&game.objects, obj)
 }
 initialize :: proc(game: ^Game) {
-	ground_texture := load_texture(game, "assets/ground.png")
-	box_texture := load_texture(game, "assets/box.png")
 	tile_polygon := b2.MakeSquare(0.5 * tile_size)
 
 	//ground
@@ -77,7 +81,7 @@ initialize :: proc(game: ^Game) {
 		body_def := b2.DefaultBodyDef()
 		body_def.position = {f32(1 * i - 10) * tile_size, -4.5 - 0.5 * tile_size}
 		obj.body_id = b2.CreateBody(game.world_id, body_def)
-		obj.sprite.image = ground_texture
+		obj.sprite.image = get_texture(game, "assets/ground.png")
 		obj.sprite.color = rl.WHITE
 		shape_def := b2.DefaultShapeDef()
 		shape_id := b2.CreatePolygonShape(obj.body_id, shape_def, tile_polygon)
@@ -91,7 +95,7 @@ initialize :: proc(game: ^Game) {
 		body_def.type = .dynamicBody
 		body_def.position = {0, -4.0 + tile_size * f32(i + 7)}
 		obj.body_id = b2.CreateBody(game.world_id, body_def)
-		obj.sprite.image = box_texture
+		obj.sprite.image = get_texture(game, "assets/box.png")
 		obj.sprite.color = rl.WHITE
 		shape_def := b2.DefaultShapeDef()
 		shape_def.restitution = 0.5
