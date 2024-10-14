@@ -23,6 +23,7 @@ Game :: struct {
 	start_tick:    time.Tick,
 	frame_counter: u64,
 	world_id:      b2.WorldId,
+	paused:        bool,
 }
 
 Component :: enum {
@@ -41,8 +42,8 @@ GameObject :: struct {
 	parent:        Maybe(GameObjectId),
 	children:      []GameObjectId,
 	body_id:       b2.BodyId, //box2d handle - box2d handles transform / physics
-	using sprite:  Sprite,
-	using script:  Script,
+	sprite:        Sprite,
+	script:        Script,
 }
 
 Sprite :: struct {
