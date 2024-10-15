@@ -19,6 +19,7 @@ Game :: struct {
 	window_width:  i32,
 	window_height: i32,
 	objects:       #soa[dynamic]GameObject,
+	textures:      map[string]rl.Texture,
 	start_tick:    time.Tick,
 	frame_counter: u64,
 	world_id:      b2.WorldId,
@@ -44,12 +45,15 @@ GameObject :: struct {
 	sprite:        Sprite,
 	script:        Script,
 }
-
+SpriteTexture :: union {
+	rl.Texture,
+	Atlas_Texture,
+}
 Sprite :: struct {
 	file:    string,
 	z:       f32, // rendering order
 	color:   rl.Color,
-	texture: Texture_Name,
+	texture: SpriteTexture,
 }
 Script :: struct {
 	awake:              proc(self_index: int, game: ^Game),

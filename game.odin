@@ -24,17 +24,49 @@ draw_object :: proc(obj: GameObject) {
 
 	ps := convert_world_to_screen(p, cv)
 
-	source := atlas_textures[obj.sprite.texture].rect
-	texture_scale := cv.tile_size * cv.scale / f32(source.width)
-	dest := Rect{ps.x, ps.y, source.width * texture_scale, source.height * texture_scale}
-	rl.DrawTexturePro(
-		atlas,
-		source,
-		dest,
-		{0, 0},
-		-rl.RAD2DEG * b2.Rot_GetAngle(radians),
-		obj.sprite.color,
-	)
+	switch tex in obj.sprite.texture {
+	case Atlas_Texture:
+		source := tex.rect
+		texture_scale := cv.tile_size * cv.scale / f32(source.width)
+		dest := Rect{ps.x, ps.y, source.width * texture_scale, source.height * texture_scale}
+		rl.DrawTexturePro(
+			atlas,
+			source,
+			dest,
+			{0, 0},
+			-rl.RAD2DEG * b2.Rot_GetAngle(radians),
+			obj.sprite.color,
+		)
+	case rl.Texture:
+		texture_scale := cv.tile_size * cv.scale / f32(tex.width)
+		rl.DrawTextureEx(
+			tex,
+			ps,
+			-rl.RAD2DEG * b2.Rot_GetAngle(radians),
+			texture_scale,
+			obj.sprite.color,
+		)
+	}
+
+}
+
+get_texture :: proc(game: ^Game, filename: string) -> rl.Texture2D {
+	texture, ok := game.textures[filename]
+	if ok {
+		return texture
+	}
+	return load_texture(game, filename)
+}
+load_texture :: proc(game: ^Game, filename: string) -> rl.Texture2D {
+	texture := rl.LoadTexture(strings.clone_to_cstring(filename))
+	game.textures[filename] = texture
+	return texture
+}
+unload_texture :: proc(game: ^Game, filename: string) {
+	texture, ok := game.textures[filename]
+	if ok {
+		rl.UnloadTexture(texture)
+	}
 }
 init_game :: proc(game: ^Game) {
 	game.window_width = WINDOW_WIDTH
@@ -60,6 +92,9 @@ init_game :: proc(game: ^Game) {
 deinit_game :: proc(game: ^Game) {
 	b2.DestroyWorld(game.world_id)
 	rl.UnloadTexture(atlas)
+	for _, texture in game.textures {
+		rl.UnloadTexture(texture)
+	}
 	rl.CloseWindow()
 }
 add_object :: proc(game: ^Game, obj: GameObject) {
