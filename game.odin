@@ -18,24 +18,6 @@ atlas: rl.Texture
 convert_world_to_screen :: proc(p: b2.Vec2, cv: ScreenConversion) -> rl.Vector2 {
 	return {cv.scale * p.x + 0.5 * cv.screen_width, 0.5 * cv.screen_height - cv.scale * p.y}
 }
-get_texture :: proc(game: ^Game, filename: string) -> rl.Texture2D {
-	texture, ok := game.textures[filename]
-	if ok {
-		return texture
-	}
-	return load_texture(game, filename)
-}
-load_texture :: proc(game: ^Game, filename: string) -> rl.Texture2D {
-	texture := rl.LoadTexture(strings.clone_to_cstring(filename))
-	game.textures[filename] = texture
-	return texture
-}
-unload_texture :: proc(game: ^Game, filename: string) {
-	texture, ok := game.textures[filename]
-	if ok {
-		rl.UnloadTexture(texture)
-	}
-}
 draw_object :: proc(obj: GameObject) {
 	p := b2.Body_GetWorldPoint(obj.body_id, {-0.5 * cv.tile_size, 0.5 * cv.tile_size})
 	radians := b2.Body_GetRotation(obj.body_id)
@@ -77,9 +59,6 @@ init_game :: proc(game: ^Game) {
 }
 deinit_game :: proc(game: ^Game) {
 	b2.DestroyWorld(game.world_id)
-	for _, texture in game.textures {
-		rl.UnloadTexture(texture)
-	}
 	rl.UnloadTexture(atlas)
 	rl.CloseWindow()
 }
