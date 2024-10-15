@@ -8,7 +8,7 @@ import rl "vendor:raylib"
 BASE_WINDOW_WIDTH :: 2
 WINDOW_WIDTH :: 1280 * BASE_WINDOW_WIDTH
 WINDOW_HEIGHT :: 720 * BASE_WINDOW_WIDTH
-pixels_per_tile :: 128
+PIXELS_PER_TILE :: 128
 tile_scale: f32 : 50.0
 //screen transformation
 cv :: ScreenConversion{tile_scale, f32(WINDOW_WIDTH), f32(WINDOW_HEIGHT)}
@@ -29,8 +29,8 @@ initialize :: proc(game: ^Game) {
 		obj.sprite.texture = tex
 		obj.sprite.color = rl.WHITE
 		shape_def := b2.DefaultShapeDef()
-		box_dim: vec2 = {tex.rect.width / pixels_per_tile, tex.rect.height / pixels_per_tile}
-		tile_polygon := b2.MakeBox(box_dim.x * 0.5, box_dim.y * 0.5)
+		box_dim: vec2 = {tex.rect.width, tex.rect.height} * (0.5 / PIXELS_PER_TILE)
+		tile_polygon := b2.MakeBox(box_dim.x, box_dim.y)
 		shape_id := b2.CreatePolygonShape(obj.body_id, shape_def, tile_polygon)
 		add_object(game, obj)
 	}
@@ -50,8 +50,8 @@ initialize :: proc(game: ^Game) {
 		obj.sprite.color = rl.WHITE
 		shape_def := b2.DefaultShapeDef()
 		shape_def.restitution = 0.01
-		box_dim: vec2 = {tex.rect.width / pixels_per_tile, tex.rect.height / pixels_per_tile}
-		tile_polygon := b2.MakeBox(box_dim.x * 0.5, box_dim.y * 0.5)
+		box_dim: vec2 = {tex.rect.width, tex.rect.height} * (0.5 / PIXELS_PER_TILE)
+		tile_polygon := b2.MakeBox(box_dim.x, box_dim.y)
 		shape_id := b2.CreatePolygonShape(obj.body_id, shape_def, tile_polygon)
 		add_object(game, obj)
 	}

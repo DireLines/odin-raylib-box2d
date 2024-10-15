@@ -22,9 +22,9 @@ draw_object :: proc(obj: GameObject) {
 	b2_size: vec2
 	switch tex in obj.sprite.texture {
 	case Atlas_Texture:
-		b2_size = {tex.rect.width, tex.rect.height} / pixels_per_tile
+		b2_size = {tex.rect.width, tex.rect.height} / PIXELS_PER_TILE
 	case rl.Texture:
-		b2_size = {f32(tex.width), f32(tex.height)} / pixels_per_tile
+		b2_size = {f32(tex.width), f32(tex.height)} / PIXELS_PER_TILE
 	}
 	p := b2.Body_GetWorldPoint(obj.body_id, {-0.5 * b2_size.x, 0.5 * b2_size.y})
 	radians := b2.Body_GetRotation(obj.body_id)
@@ -34,7 +34,7 @@ draw_object :: proc(obj: GameObject) {
 	switch tex in obj.sprite.texture {
 	case Atlas_Texture:
 		source := tex.rect
-		texture_scale := cv.scale / pixels_per_tile
+		texture_scale := cv.scale / PIXELS_PER_TILE
 		dest := Rect{ps.x, ps.y, source.width * texture_scale, source.height * texture_scale}
 		rl.DrawTexturePro(
 			atlas,
@@ -45,7 +45,7 @@ draw_object :: proc(obj: GameObject) {
 			obj.sprite.color,
 		)
 	case rl.Texture:
-		texture_scale := cv.scale / pixels_per_tile
+		texture_scale := cv.scale / PIXELS_PER_TILE
 		rl.DrawTextureEx(
 			tex,
 			ps,
