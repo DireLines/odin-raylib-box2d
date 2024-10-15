@@ -570,10 +570,6 @@ main :: proc() {
 		}
 	}
 
-	rc: stbrp.Context
-	rc_nodes: [ATLAS_SIZE]stbrp.Node
-	stbrp.init_target(&rc, ATLAS_SIZE, ATLAS_SIZE, raw_data(rc_nodes[:]), ATLAS_SIZE)
-
 	letters := utf8.string_to_runes(LETTERS_IN_FONT)
 
 	pack_rects: [dynamic]stbrp.Rect
@@ -723,7 +719,19 @@ main :: proc() {
 
 	append(&pack_rects, stbrp.Rect{id = make_pack_rect_id(0, .ShapesTexture), w = 11, h = 11})
 
-	rect_pack_res := stbrp.pack_rects(&rc, raw_data(pack_rects), i32(len(pack_rects)))
+	rc: stbrp.Context
+	target_size: c.int = ATLAS_SIZE
+	max_pack_attempts :: 10
+	rect_pack_res: i32 = -1
+	attempt := 0
+	for rect_pack_res != 1 && attempt < max_pack_attempts {
+		rc_nodes := make([]stbrp.Node, target_size)
+		stbrp.init_target(&rc, target_size, target_size, raw_data(rc_nodes[:]), target_size)
+		rect_pack_res = stbrp.pack_rects(&rc, raw_data(pack_rects), i32(len(pack_rects)))
+		attempt += 1
+		target_size *= 2
+	}
+
 
 	if rect_pack_res != 1 {
 		log.error("Failed to pack some rects. ATLAS_SIZE too small?")
