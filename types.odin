@@ -6,7 +6,7 @@ import b2 "vendor:box2d"
 import rl "vendor:raylib"
 vec2 :: [2]f32
 mat3 :: matrix[3, 3]f32
-
+Rect :: rl.Rectangle
 
 ScreenConversion :: struct {
 	scale:         f32,
@@ -50,7 +50,7 @@ Sprite :: struct {
 	file:  string,
 	z:     f32, // rendering order
 	color: rl.Color,
-	image: rl.Texture,
+	image: Texture_Name,
 }
 Script :: struct {
 	awake:              proc(self_index: int, game: ^Game),
