@@ -42,7 +42,7 @@ draw_object :: proc(obj: GameObject) {
 
 	ps := convert_world_to_screen(p, cv)
 
-	source := atlas_textures[obj.sprite.image].rect
+	source := atlas_textures[obj.sprite.texture].rect
 	texture_scale := cv.tile_size * cv.scale / f32(source.width)
 	dest := Rect{ps.x, ps.y, source.width * texture_scale, source.height * texture_scale}
 	rl.DrawTexturePro(

@@ -25,7 +25,7 @@ initialize :: proc(game: ^Game) {
 			-15.5 + (3 * tile_size * f32(i % 5)) - 0.5 * tile_size,
 		}
 		obj.body_id = b2.CreateBody(game.world_id, body_def)
-		obj.sprite.image = .Ground
+		obj.sprite.texture = .Ground
 		obj.sprite.color = rl.WHITE
 		shape_def := b2.DefaultShapeDef()
 		shape_id := b2.CreatePolygonShape(obj.body_id, shape_def, tile_polygon)
@@ -42,7 +42,7 @@ initialize :: proc(game: ^Game) {
 		body_def.type = .dynamicBody
 		body_def.position = {f32(1 * x - 10) * tile_size, -4.0 + tile_size * f32(y + 7)}
 		obj.body_id = b2.CreateBody(game.world_id, body_def)
-		obj.sprite.image = .Box
+		obj.sprite.texture = .Box
 		obj.sprite.color = rl.WHITE
 		shape_def := b2.DefaultShapeDef()
 		shape_def.restitution = 0.01

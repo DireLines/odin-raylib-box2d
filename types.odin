@@ -47,10 +47,10 @@ GameObject :: struct {
 }
 
 Sprite :: struct {
-	file:  string,
-	z:     f32, // rendering order
-	color: rl.Color,
-	image: Texture_Name,
+	file:    string,
+	z:       f32, // rendering order
+	color:   rl.Color,
+	texture: Texture_Name,
 }
 Script :: struct {
 	awake:              proc(self_index: int, game: ^Game),
