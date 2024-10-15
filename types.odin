@@ -10,7 +10,6 @@ Rect :: rl.Rectangle
 
 ScreenConversion :: struct {
 	scale:         f32,
-	tile_size:     f32,
 	screen_width:  f32,
 	screen_height: f32,
 }
