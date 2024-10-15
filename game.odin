@@ -99,8 +99,9 @@ start_game :: proc(game: ^Game) {
 			b2.World_Step(game.world_id, dt, 8)
 			contacts := b2.World_GetContactEvents(game.world_id)
 			timer->time("physics")
-			// if contacts.beginCount + contacts.hitCount + contacts.endCount > 0 {
-			// 	fmt.println("contacts this frame:", contacts)
+			num_contacts := contacts.beginCount + contacts.hitCount + contacts.endCount
+			// if num_contacts > 0 {
+			// 	fmt.println("num contacts this frame:", num_contacts)
 			// }
 		}
 		render(game)

@@ -1,6 +1,7 @@
 package main
 
 import "core:fmt"
+import "core:math/rand"
 import b2 "vendor:box2d"
 import rl "vendor:raylib"
 
@@ -42,7 +43,7 @@ initialize :: proc(game: ^Game) {
 		body_def.type = .dynamicBody
 		body_def.position = {f32(1 * x - 10) * tile_size, -4.0 + tile_size * f32(y + 7)}
 		obj.body_id = b2.CreateBody(game.world_id, body_def)
-		obj.sprite.texture = .Box
+		obj.sprite.texture = rand.choice_enum(Texture_Name)
 		obj.sprite.color = rl.WHITE
 		shape_def := b2.DefaultShapeDef()
 		shape_def.restitution = 0.01
