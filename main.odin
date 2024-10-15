@@ -43,10 +43,7 @@ initialize :: proc(game: ^Game) {
 		body_def.type = .dynamicBody
 		body_def.position = {f32(1 * x - 10) * tile_size, -4.0 + tile_size * f32(y + 7)}
 		obj.body_id = b2.CreateBody(game.world_id, body_def)
-		puzzle_piece_index := rand.uint32() % 300 + 1
-		filename := fmt.tprintf("textures/Puzzle_Piece_%d.png", puzzle_piece_index)
-		obj.sprite.texture = get_texture(game, filename)
-		// obj.sprite.texture = atlas_textures[rand.choice_enum(Texture_Name)]
+		obj.sprite.texture = atlas_textures[rand.choice_enum(Texture_Name)]
 		obj.sprite.color = rl.WHITE
 		shape_def := b2.DefaultShapeDef()
 		shape_def.restitution = 0.01
