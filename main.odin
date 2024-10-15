@@ -26,7 +26,7 @@ initialize :: proc(game: ^Game) {
 			-15.5 + (3 * tile_size * f32(i % 5)) - 0.5 * tile_size,
 		}
 		obj.body_id = b2.CreateBody(game.world_id, body_def)
-		obj.sprite.texture = get_texture(game, "textures/ground.png")
+		obj.sprite.texture = atlas_textures[.Ground]
 		obj.sprite.color = rl.WHITE
 		shape_def := b2.DefaultShapeDef()
 		shape_id := b2.CreatePolygonShape(obj.body_id, shape_def, tile_polygon)
