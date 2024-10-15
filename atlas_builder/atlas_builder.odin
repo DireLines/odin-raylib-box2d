@@ -737,11 +737,11 @@ main :: proc() {
 		log.error("Failed to pack some rects. ATLAS_SIZE too small?")
 	}
 
-	atlas_pixels := make([]Color, ATLAS_SIZE * ATLAS_SIZE)
+	atlas_pixels := make([]Color, target_size * target_size)
 	atlas := Image {
 		data   = atlas_pixels,
-		width  = ATLAS_SIZE,
-		height = ATLAS_SIZE,
+		width  = int(target_size),
+		height = int(target_size),
 	}
 	atlas_textures: [dynamic]Atlas_Texture_Rect
 	atlas_tiles: [dynamic]Atlas_Tile_Rect
@@ -862,14 +862,14 @@ main :: proc() {
 		}
 	}
 
-	crop_size := Vec2i{ATLAS_SIZE, ATLAS_SIZE}
+	crop_size := Vec2i{int(target_size), int(target_size)}
 
 	if ATLAS_CROP {
 		max_x, max_y: int
 
 		for c, ci in atlas_pixels {
-			x := ci % ATLAS_SIZE
-			y := ci / ATLAS_SIZE
+			x := ci % int(target_size)
+			y := ci / int(target_size)
 
 			if c != {} {
 				if x > max_x {
@@ -898,7 +898,7 @@ main :: proc() {
 		c.int(crop_size.y),
 		4,
 		raw_data(atlas_pixels),
-		ATLAS_SIZE * size_of(Color),
+		target_size * size_of(Color),
 	)
 
 	f, _ := os.open(ATLAS_ODIN_OUTPUT_PATH, os.O_WRONLY | os.O_CREATE | os.O_TRUNC, 0x1A4)
