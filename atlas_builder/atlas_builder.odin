@@ -60,7 +60,7 @@ TEXTURES_DIR :: "textures"
 
 // The letters to extract from the font
 LETTERS_IN_FONT :: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890?!&.,_:[]<>{}/-+~"
-GLYPHS_PER_FONT :: len(LETTERS_IN_FONT)
+NUM_LETTERS_PER_FONT :: len(LETTERS_IN_FONT)
 letters := utf8.string_to_runes(LETTERS_IN_FONT)
 
 // The folder of fonts to extract letters from
@@ -111,7 +111,7 @@ Glyph :: struct {
 
 Font :: struct {
 	name:   string,
-	glyphs: [GLYPHS_PER_FONT]Glyph,
+	glyphs: [NUM_LETTERS_PER_FONT]Glyph,
 }
 
 Atlas_Glyph :: struct {
@@ -665,8 +665,8 @@ main :: proc() {
 	//cut off the rect type id to just keep orig id
 	font_idx_from_rect_id :: proc(id: i32) -> (font_idx: int, glyph_idx: int) {
 		idx := idx_from_rect_id(id)
-		font_idx = idx / GLYPHS_PER_FONT
-		glyph_idx = idx % GLYPHS_PER_FONT
+		font_idx = idx / NUM_LETTERS_PER_FONT
+		glyph_idx = idx % NUM_LETTERS_PER_FONT
 		return
 	}
 
@@ -697,7 +697,7 @@ main :: proc() {
 			append(
 				&pack_rects,
 				stbrp.Rect {
-					id = make_pack_rect_id(i32(f_idx * GLYPHS_PER_FONT + i), .Glyph),
+					id = make_pack_rect_id(i32(f_idx * NUM_LETTERS_PER_FONT + i), .Glyph),
 					w = stbrp.Coord(glyph.image.width) + 2,
 					h = stbrp.Coord(glyph.image.height) + 2,
 				},

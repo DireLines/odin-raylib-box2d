@@ -120,7 +120,7 @@ render :: proc(game: ^Game) {
 		draw_object(obj)
 	}
 	if game.paused {
-		font_size :: ATLAS_FONT_SIZE * 2
+		font_size :: ATLAS_FONT_SIZE
 		rl.DrawTextEx(
 			game.font,
 			"~~paused~~",
