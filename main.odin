@@ -10,6 +10,7 @@ WINDOW_WIDTH :: 1280 * BASE_WINDOW_WIDTH
 WINDOW_HEIGHT :: 720 * BASE_WINDOW_WIDTH
 PIXELS_PER_TILE :: 128
 TILE_SCALE: f32 : 30.0
+MAIN_FONT :: Font_Name.Inconsolata_Regular
 //screen transformation
 cv :: ScreenConversion{TILE_SCALE, f32(WINDOW_WIDTH), f32(WINDOW_HEIGHT)}
 

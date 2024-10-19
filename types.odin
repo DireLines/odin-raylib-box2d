@@ -19,7 +19,7 @@ Game :: struct {
 	window_height: i32,
 	objects:       #soa[dynamic]GameObject,
 	textures:      map[string]rl.Texture,
-	font:          rl.Font,
+	fonts:         map[Font_Name]rl.Font,
 	start_tick:    time.Tick,
 	frame_counter: u64,
 	world_id:      b2.WorldId,

@@ -93,7 +93,7 @@ init_game :: proc(game: ^Game) {
 	rl.UnloadImage(atlas_image)
 	// Set the shapes drawing texture, this makes rl.DrawRectangleRec etc use the atlas
 	rl.SetShapesTexture(atlas, SHAPES_TEXTURE_RECT)
-	game.font = load_atlased_font(.Inconsolata_Regular)
+	game.fonts[MAIN_FONT] = load_atlased_font(MAIN_FONT)
 
 	//box2d init
 	game.world_id = b2.CreateWorld(b2.DefaultWorldDef())
@@ -103,6 +103,9 @@ deinit_game :: proc(game: ^Game) {
 	rl.UnloadTexture(atlas)
 	for _, texture in game.textures {
 		rl.UnloadTexture(texture)
+	}
+	for _, font in game.fonts {
+		delete_atlased_font(font)
 	}
 	rl.CloseWindow()
 }
@@ -122,7 +125,7 @@ render :: proc(game: ^Game) {
 	if game.paused {
 		font_size :: ATLAS_FONT_SIZE
 		rl.DrawTextEx(
-			game.font,
+			game.fonts[MAIN_FONT],
 			"~~paused~~",
 			{f32((game.window_width - rl.MeasureText("~~paused~~", font_size)) / 2), 100},
 			font_size,
@@ -155,15 +158,14 @@ start_game :: proc(game: ^Game) {
 }
 
 
-// TODO: make atlas_builder handle multiple fonts, and this takes a font name
 // This uses the letters in the atlas to create a raylib font. Since this font is in the atlas
 // it can be drawn in the same draw call as the other graphics in the atlas. Don't use
 // rl.UnloadFont() to destroy this font, instead use `delete_atlased_font`, since we've set up the
 // memory ourselves.
 //
 // The set of available glyphs is governed by `LETTERS_IN_FONT` in `atlas_builder.odin`
-// The font used is governed by `FONT_FILENAME` in `atlas_builder.odin`
-load_atlased_font :: proc(font_name: Atlas_Font_Name) -> rl.Font {
+// The set of available fonts depends on the contents of FONTS_DIR in `atlas_builder.odin`
+load_atlased_font :: proc(font_name: Font_Name) -> rl.Font {
 	num_glyphs := len(LETTERS_IN_FONT)
 	font_rects := make([]Rect, num_glyphs)
 	glyphs := make([]rl.GlyphInfo, num_glyphs)
