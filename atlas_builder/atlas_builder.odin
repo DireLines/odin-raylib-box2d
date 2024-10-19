@@ -1124,7 +1124,6 @@ main :: proc() {
 	fmt.fprintln(f, "}\n")
 
 	fmt.fprintln(f, "Font_Name :: enum {")
-	fmt.fprint(f, "\tNone,\n")
 	for font in atlas_fonts {
 		fmt.fprintf(f, "\t%s,\n", font.name)
 	}
@@ -1142,7 +1141,6 @@ main :: proc() {
 	fmt.fprintln(f, "")
 
 	fmt.fprintln(f, "atlas_fonts: [Font_Name][]Atlas_Glyph = {")
-	fmt.fprint(f, "\t.None = {},\n")
 	for font in atlas_fonts {
 		fmt.fprintf(f, "\t.%v = {{\n", font.name)
 		for ag in font.glyphs {
