@@ -93,7 +93,7 @@ init_game :: proc(game: ^Game) {
 	rl.UnloadImage(atlas_image)
 	// Set the shapes drawing texture, this makes rl.DrawRectangleRec etc use the atlas
 	rl.SetShapesTexture(atlas, SHAPES_TEXTURE_RECT)
-	game.font = load_atlased_font(.Dtm_Mono)
+	game.font = load_atlased_font(.Inconsolata_Regular)
 
 	//box2d init
 	game.world_id = b2.CreateWorld(b2.DefaultWorldDef())

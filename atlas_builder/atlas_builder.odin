@@ -67,7 +67,7 @@ letters := utf8.string_to_runes(LETTERS_IN_FONT)
 FONTS_DIR :: "fonts"
 
 // letters are rasterized into the atlas, so you have to choose a size for them to be rendered at
-FONT_SIZE :: 32
+FONT_SIZE :: 72
 
 
 // ---------------------
