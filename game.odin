@@ -1,6 +1,7 @@
 package main
 
 import "core:fmt"
+import "core:slice"
 import "core:strings"
 import b2 "vendor:box2d"
 import rl "vendor:raylib"
@@ -92,6 +93,7 @@ init_game :: proc(game: ^Game) {
 	rl.UnloadImage(atlas_image)
 	// Set the shapes drawing texture, this makes rl.DrawRectangleRec etc use the atlas
 	rl.SetShapesTexture(atlas, SHAPES_TEXTURE_RECT)
+	game.font = load_atlased_font()
 
 	//box2d init
 	game.world_id = b2.CreateWorld(b2.DefaultWorldDef())
@@ -118,12 +120,14 @@ render :: proc(game: ^Game) {
 		draw_object(obj)
 	}
 	if game.paused {
-		rl.DrawText(
+		font_size :: ATLAS_FONT_SIZE * 2
+		rl.DrawTextEx(
+			game.font,
 			"~~paused~~",
-			(game.window_width - rl.MeasureText("~~paused~~", 20)) / 2,
-			100,
-			20,
-			rl.LIGHTGRAY,
+			{f32((game.window_width - rl.MeasureText("~~paused~~", font_size)) / 2), 100},
+			font_size,
+			0,
+			rl.WHITE,
 		)
 	}
 	timer->time("render")
@@ -148,4 +152,42 @@ start_game :: proc(game: ^Game) {
 		}
 		render(game)
 	}
+}
+
+
+// TODO: make atlas_builder handle multiple fonts, and this takes a font name
+// This uses the letters in the atlas to create a raylib font. Since this font is in the atlas
+// it can be drawn in the same draw call as the other graphics in the atlas. Don't use
+// rl.UnloadFont() to destroy this font, instead use `delete_atlased_font`, since we've set up the
+// memory ourselves.
+//
+// The set of available glyphs is governed by `LETTERS_IN_FONT` in `atlas_builder.odin`
+// The font used is governed by `FONT_FILENAME` in `atlas_builder.odin`
+load_atlased_font :: proc() -> rl.Font {
+	num_glyphs := len(atlas_glyphs)
+	font_rects := make([]Rect, num_glyphs)
+	glyphs := make([]rl.GlyphInfo, num_glyphs)
+
+	for ag, idx in atlas_glyphs {
+		font_rects[idx] = ag.rect
+		glyphs[idx] = {
+			value    = ag.value,
+			offsetX  = i32(ag.offset_x),
+			offsetY  = i32(ag.offset_y),
+			advanceX = i32(ag.advance_x),
+		}
+	}
+
+	return {
+		baseSize = ATLAS_FONT_SIZE,
+		glyphCount = i32(num_glyphs),
+		glyphPadding = 0,
+		texture = atlas,
+		recs = raw_data(font_rects),
+		glyphs = raw_data(glyphs),
+	}
+}
+delete_atlased_font :: proc(font: rl.Font) {
+	delete(slice.from_ptr(font.glyphs, int(font.glyphCount)))
+	delete(slice.from_ptr(font.recs, int(font.glyphCount)))
 }
