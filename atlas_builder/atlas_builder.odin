@@ -61,8 +61,10 @@ TEXTURES_DIR :: "textures"
 // The letters to extract from the font
 LETTERS_IN_FONT :: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890?!&.,_:[]-+"
 
+letters := utf8.string_to_runes(LETTERS_IN_FONT)
+
 // The font to extract letters from
-FONT_FILENAME :: "font.ttf"
+FONTS_DIR :: "fonts"
 
 // The font size of letters extracted from font
 FONT_SIZE :: 32
@@ -105,6 +107,7 @@ Glyph :: struct {
 	image:     Image,
 	offset:    Vec2i,
 	advance_x: int,
+	font_name: string,
 }
 
 Atlas_Glyph :: struct {
@@ -213,6 +216,52 @@ get_image_pixel :: proc(img: Image, x: int, y: int) -> Color {
 // and turns it from player_jump.png to Player_Jump.
 asset_name :: proc(path: string) -> string {
 	return fmt.tprintf("%s", strings.to_ada_case(slashpath.name(slashpath.base(path))))
+}
+
+load_font :: proc(filename: string, glyphs: ^[dynamic]Glyph) {
+	font_data, ok := os.read_entire_file(filename)
+	font_name := asset_name(filename)
+	if !ok {
+		log.warnf("oops no font found at %s", filename)
+		return
+	}
+	fi: stbtt.fontinfo
+	if !stbtt.InitFont(&fi, raw_data(font_data), 0) {
+		log.warnf("stbtt InitFont failed for %s", filename)
+		return
+	}
+	scale_factor := stbtt.ScaleForPixelHeight(&fi, FONT_SIZE)
+
+	ascent: c.int
+	stbtt.GetFontVMetrics(&fi, &ascent, nil, nil)
+
+	for r, r_idx in letters {
+		w, h, ox, oy: c.int
+		data := stbtt.GetCodepointBitmap(&fi, scale_factor, scale_factor, r, &w, &h, &ox, &oy)
+		advance_x: c.int
+		stbtt.GetCodepointHMetrics(&fi, r, &advance_x, nil)
+
+		rgba_data := make([]Color, w * h)
+
+		for i in 0 ..< w * h {
+			a := data[i]
+			rgba_data[i].r = 255
+			rgba_data[i].g = 255
+			rgba_data[i].b = 255
+			rgba_data[i].a = a
+		}
+
+		append(
+			glyphs,
+			Glyph {
+				image = {data = rgba_data, width = int(w), height = int(h)},
+				value = r,
+				offset = {int(ox), int(f32(oy) + f32(ascent) * scale_factor)},
+				advance_x = int(f32(advance_x) * scale_factor),
+				font_name = font_name,
+			},
+		)
+	}
 }
 
 // Loads a tileset. Currently only supports .ase tilesets
@@ -570,10 +619,9 @@ main :: proc() {
 		}
 	}
 
-	letters := utf8.string_to_runes(LETTERS_IN_FONT)
 
 	pack_rects: [dynamic]stbrp.Rect
-	glyphs: []Glyph
+	glyphs: [dynamic]Glyph
 
 	PackRectType :: enum {
 		Texture,
@@ -582,6 +630,7 @@ main :: proc() {
 		ShapesTexture,
 	}
 
+	//first sort by type, then by orig id
 	make_pack_rect_id :: proc(id: i32, type: PackRectType) -> i32 {
 		t := u32(type)
 		t <<= 29
@@ -595,6 +644,7 @@ main :: proc() {
 		return id | i32(y)
 	}
 
+	//cut off the rect type id to just keep orig id
 	idx_from_rect_id :: proc(id: i32) -> int {
 		return int((u32(id) << 3) >> 3)
 	}
@@ -608,60 +658,28 @@ main :: proc() {
 		return PackRectType(i >> 29)
 	}
 
-	if font_data, ok := os.read_entire_file(FONT_FILENAME); ok {
-		fi: stbtt.fontinfo
-		if stbtt.InitFont(&fi, raw_data(font_data), 0) {
-			scale_factor := stbtt.ScaleForPixelHeight(&fi, FONT_SIZE)
+	file_infos = dir_path_to_file_infos(FONTS_DIR)
 
-			ascent: c.int
-			stbtt.GetFontVMetrics(&fi, &ascent, nil, nil)
+	slice.sort_by(file_infos, proc(i, j: os.File_Info) -> bool {
+		return time.diff(i.creation_time, j.creation_time) > 0
+	})
 
-			glyphs = make([]Glyph, len(letters))
-
-			for r, r_idx in letters {
-				w, h, ox, oy: c.int
-				data := stbtt.GetCodepointBitmap(
-					&fi,
-					scale_factor,
-					scale_factor,
-					r,
-					&w,
-					&h,
-					&ox,
-					&oy,
-				)
-				advance_x: c.int
-				stbtt.GetCodepointHMetrics(&fi, r, &advance_x, nil)
-
-				rgba_data := make([]Color, w * h)
-
-				for i in 0 ..< w * h {
-					a := data[i]
-					rgba_data[i].r = 255
-					rgba_data[i].g = 255
-					rgba_data[i].b = 255
-					rgba_data[i].a = a
-				}
-
-				glyphs[r_idx] = {
-					image = {data = rgba_data, width = int(w), height = int(h)},
-					value = r,
-					offset = {int(ox), int(f32(oy) + f32(ascent) * scale_factor)},
-					advance_x = int(f32(advance_x) * scale_factor),
-				}
-
-				append(
-					&pack_rects,
-					stbrp.Rect {
-						id = make_pack_rect_id(i32(r_idx), .Glyph),
-						w = stbrp.Coord(w) + 2,
-						h = stbrp.Coord(h) + 2,
-					},
-				)
-			}
+	for fi in file_infos {
+		if strings.has_suffix(fi.name, ".ttf") {
+			path := fmt.tprintf("%s/%s", FONTS_DIR, fi.name)
+			load_font(path, &glyphs)
 		}
-	} else {
-		log.warnf("No %s file found", FONT_FILENAME)
+	}
+
+	for glyph, i in glyphs {
+		append(
+			&pack_rects,
+			stbrp.Rect {
+				id = make_pack_rect_id(i32(i), .Glyph),
+				w = stbrp.Coord(glyph.image.width) + 2,
+				h = stbrp.Coord(glyph.image.height) + 2,
+			},
+		)
 	}
 
 	for t, idx in textures {
