@@ -9,9 +9,9 @@ BASE_WINDOW_WIDTH :: 2
 WINDOW_WIDTH :: 1280 * BASE_WINDOW_WIDTH
 WINDOW_HEIGHT :: 720 * BASE_WINDOW_WIDTH
 PIXELS_PER_TILE :: 128
-tile_scale: f32 : 50.0
+TILE_SCALE: f32 : 30.0
 //screen transformation
-cv :: ScreenConversion{tile_scale, f32(WINDOW_WIDTH), f32(WINDOW_HEIGHT)}
+cv :: ScreenConversion{TILE_SCALE, f32(WINDOW_WIDTH), f32(WINDOW_HEIGHT)}
 
 initialize :: proc(game: ^Game) {
 	tile_spacing :: 1.5
@@ -37,7 +37,7 @@ initialize :: proc(game: ^Game) {
 
 	//boxes
 	num_box_rows :: 21
-	for i in 0 ..< 3000 {
+	for i in 0 ..< 6000 {
 		x := i % num_box_rows
 		y := i / num_box_rows + 2
 		tex := atlas_textures[rand.choice_enum(Texture_Name)]

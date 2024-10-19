@@ -60,11 +60,13 @@ TEXTURES_DIR :: "textures"
 
 // The letters to extract from the font
 LETTERS_IN_FONT :: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890?!&.,_:[]<>{}/-+~"
+GLYPHS_PER_FONT :: len(LETTERS_IN_FONT)
+letters := utf8.string_to_runes(LETTERS_IN_FONT)
 
-// The font to extract letters from
-FONT_FILENAME :: "font.ttf"
+// The folder of fonts to extract letters from
+FONTS_DIR :: "fonts"
 
-// The font size of letters extracted from font
+// letters are rasterized into the atlas, so you have to choose a size for them to be rendered at
 FONT_SIZE :: 32
 
 
@@ -107,9 +109,19 @@ Glyph :: struct {
 	advance_x: int,
 }
 
+Font :: struct {
+	name:   string,
+	glyphs: [GLYPHS_PER_FONT]Glyph,
+}
+
 Atlas_Glyph :: struct {
 	rect:  Rect,
 	glyph: Glyph,
+}
+
+Atlas_Font :: struct {
+	name:   string,
+	glyphs: [dynamic]Atlas_Glyph,
 }
 
 Texture_Data :: struct {
@@ -212,7 +224,57 @@ get_image_pixel :: proc(img: Image, x: int, y: int) -> Color {
 // Returns the format I want for names in atlas.odin. Takes the name from a path
 // and turns it from player_jump.png to Player_Jump.
 asset_name :: proc(path: string) -> string {
-	return fmt.tprintf("%s", strings.to_ada_case(slashpath.name(slashpath.base(path))))
+	name, _ := strings.replace_all(
+		strings.to_ada_case(slashpath.name(slashpath.base(path))),
+		",",
+		"_",
+	)
+	return fmt.tprintf("%s", name)
+}
+
+load_font :: proc(filename: string) -> Font {
+	font_data, ok := os.read_entire_file(filename)
+	if !ok {
+		log.warnf("oops no font found at %s", filename)
+		return {}
+	}
+	fi: stbtt.fontinfo
+	if !stbtt.InitFont(&fi, raw_data(font_data), 0) {
+		log.warnf("stbtt InitFont failed for %s", filename)
+		return {}
+	}
+	scale_factor := stbtt.ScaleForPixelHeight(&fi, FONT_SIZE)
+
+	ascent: c.int
+	stbtt.GetFontVMetrics(&fi, &ascent, nil, nil)
+	font := Font {
+		name = asset_name(filename),
+	}
+
+	for r, r_idx in letters {
+		w, h, ox, oy: c.int
+		data := stbtt.GetCodepointBitmap(&fi, scale_factor, scale_factor, r, &w, &h, &ox, &oy)
+		advance_x: c.int
+		stbtt.GetCodepointHMetrics(&fi, r, &advance_x, nil)
+
+		rgba_data := make([]Color, w * h)
+
+		for i in 0 ..< w * h {
+			a := data[i]
+			rgba_data[i].r = 255
+			rgba_data[i].g = 255
+			rgba_data[i].b = 255
+			rgba_data[i].a = a
+		}
+
+		font.glyphs[r_idx] = {
+			image = {data = rgba_data, width = int(w), height = int(h)},
+			value = r,
+			offset = {int(ox), int(f32(oy) + f32(ascent) * scale_factor)},
+			advance_x = int(f32(advance_x) * scale_factor),
+		}
+	}
+	return font
 }
 
 // Loads a tileset. Currently only supports .ase tilesets
@@ -570,10 +632,9 @@ main :: proc() {
 		}
 	}
 
-	letters := utf8.string_to_runes(LETTERS_IN_FONT)
 
 	pack_rects: [dynamic]stbrp.Rect
-	glyphs: []Glyph
+	fonts: [dynamic]Font
 
 	PackRectType :: enum {
 		Texture,
@@ -582,6 +643,7 @@ main :: proc() {
 		ShapesTexture,
 	}
 
+	//first sort by type, then by orig id
 	make_pack_rect_id :: proc(id: i32, type: PackRectType) -> i32 {
 		t := u32(type)
 		t <<= 29
@@ -595,8 +657,17 @@ main :: proc() {
 		return id | i32(y)
 	}
 
+	//cut off the rect type id to just keep orig id
 	idx_from_rect_id :: proc(id: i32) -> int {
 		return int((u32(id) << 3) >> 3)
+	}
+
+	//cut off the rect type id to just keep orig id
+	font_idx_from_rect_id :: proc(id: i32) -> (font_idx: int, glyph_idx: int) {
+		idx := idx_from_rect_id(id)
+		font_idx = idx / GLYPHS_PER_FONT
+		glyph_idx = idx % GLYPHS_PER_FONT
+		return
 	}
 
 	x_y_from_tile_id :: proc(id: i32) -> (x, y: int) {
@@ -608,60 +679,30 @@ main :: proc() {
 		return PackRectType(i >> 29)
 	}
 
-	if font_data, ok := os.read_entire_file(FONT_FILENAME); ok {
-		fi: stbtt.fontinfo
-		if stbtt.InitFont(&fi, raw_data(font_data), 0) {
-			scale_factor := stbtt.ScaleForPixelHeight(&fi, FONT_SIZE)
+	file_infos = dir_path_to_file_infos(FONTS_DIR)
 
-			ascent: c.int
-			stbtt.GetFontVMetrics(&fi, &ascent, nil, nil)
+	slice.sort_by(file_infos, proc(i, j: os.File_Info) -> bool {
+		return time.diff(i.creation_time, j.creation_time) > 0
+	})
 
-			glyphs = make([]Glyph, len(letters))
-
-			for r, r_idx in letters {
-				w, h, ox, oy: c.int
-				data := stbtt.GetCodepointBitmap(
-					&fi,
-					scale_factor,
-					scale_factor,
-					r,
-					&w,
-					&h,
-					&ox,
-					&oy,
-				)
-				advance_x: c.int
-				stbtt.GetCodepointHMetrics(&fi, r, &advance_x, nil)
-
-				rgba_data := make([]Color, w * h)
-
-				for i in 0 ..< w * h {
-					a := data[i]
-					rgba_data[i].r = 255
-					rgba_data[i].g = 255
-					rgba_data[i].b = 255
-					rgba_data[i].a = a
-				}
-
-				glyphs[r_idx] = {
-					image = {data = rgba_data, width = int(w), height = int(h)},
-					value = r,
-					offset = {int(ox), int(f32(oy) + f32(ascent) * scale_factor)},
-					advance_x = int(f32(advance_x) * scale_factor),
-				}
-
-				append(
-					&pack_rects,
-					stbrp.Rect {
-						id = make_pack_rect_id(i32(r_idx), .Glyph),
-						w = stbrp.Coord(w) + 2,
-						h = stbrp.Coord(h) + 2,
-					},
-				)
-			}
+	for fi in file_infos {
+		if strings.has_suffix(fi.name, ".ttf") {
+			path := fmt.tprintf("%s/%s", FONTS_DIR, fi.name)
+			append(&fonts, load_font(path))
 		}
-	} else {
-		log.warnf("No %s file found", FONT_FILENAME)
+	}
+	glyphs: [dynamic]Glyph
+	for font, f_idx in fonts {
+		for glyph, i in font.glyphs {
+			append(
+				&pack_rects,
+				stbrp.Rect {
+					id = make_pack_rect_id(i32(f_idx * GLYPHS_PER_FONT + i), .Glyph),
+					w = stbrp.Coord(glyph.image.width) + 2,
+					h = stbrp.Coord(glyph.image.height) + 2,
+				},
+			)
+		}
 	}
 
 	for t, idx in textures {
@@ -743,10 +784,13 @@ main :: proc() {
 		width  = int(target_size),
 		height = int(target_size),
 	}
+	atlas_fonts: [dynamic]Atlas_Font
+	for font in fonts {
+		append(&atlas_fonts, Atlas_Font{name = font.name})
+	}
 	atlas_textures: [dynamic]Atlas_Texture_Rect
 	atlas_tiles: [dynamic]Atlas_Tile_Rect
 
-	atlas_glyphs: [dynamic]Atlas_Glyph
 	shapes_texture_rect: Rect
 
 	for rp in pack_rects {
@@ -787,8 +831,8 @@ main :: proc() {
 
 			append(&atlas_textures, ar)
 		case .Glyph:
-			idx := idx_from_rect_id(rp.id)
-			g := glyphs[idx]
+			f_idx, g_idx := font_idx_from_rect_id(rp.id)
+			g := fonts[f_idx].glyphs[g_idx]
 			img := g.image
 
 			source := Rect{0, 0, img.width, img.height}
@@ -801,7 +845,7 @@ main :: proc() {
 				glyph = g,
 			}
 
-			append(&atlas_glyphs, ag)
+			append(&atlas_fonts[f_idx].glyphs, ag)
 		case .Tile:
 			ix, iy := x_y_from_tile_id(rp.id)
 
@@ -1079,6 +1123,14 @@ main :: proc() {
 
 	fmt.fprintln(f, "}\n")
 
+	fmt.fprintln(f, "Atlas_Font_Name :: enum {")
+	fmt.fprint(f, "\tNone,\n")
+	for font in atlas_fonts {
+		fmt.fprintf(f, "\t%s,\n", font.name)
+	}
+	fmt.fprintln(f, "}")
+	fmt.fprintln(f, "")
+
 
 	fmt.fprintln(f, "Atlas_Glyph :: struct {")
 	fmt.fprintln(f, "\trect: Rect,")
@@ -1089,21 +1141,25 @@ main :: proc() {
 	fmt.fprintln(f, "}")
 	fmt.fprintln(f, "")
 
-	fmt.fprintln(f, "atlas_glyphs: []Atlas_Glyph = {")
-
-	for ag in atlas_glyphs {
-		fmt.fprintf(
-			f,
-			"\t{{ rect = {{%v, %v, %v, %v}}, value = %q, offset_x = %v, offset_y = %v, advance_x = %v}},\n",
-			ag.rect.x,
-			ag.rect.y,
-			ag.rect.width,
-			ag.rect.height,
-			ag.glyph.value,
-			ag.glyph.offset.x,
-			ag.glyph.offset.y,
-			ag.glyph.advance_x,
-		)
+	fmt.fprintln(f, "atlas_fonts: [Atlas_Font_Name][]Atlas_Glyph = {")
+	fmt.fprint(f, "\t.None = {},\n")
+	for font in atlas_fonts {
+		fmt.fprintf(f, "\t.%v = {{\n", font.name)
+		for ag in font.glyphs {
+			fmt.fprintf(
+				f,
+				"\t\t{{ rect = {{%v, %v, %v, %v}}, value = %q, offset_x = %v, offset_y = %v, advance_x = %v}},\n",
+				ag.rect.x,
+				ag.rect.y,
+				ag.rect.width,
+				ag.rect.height,
+				ag.glyph.value,
+				ag.glyph.offset.x,
+				ag.glyph.offset.y,
+				ag.glyph.advance_x,
+			)
+		}
+		fmt.fprintln(f, "\t},")
 	}
 
 	fmt.fprintln(f, "}")

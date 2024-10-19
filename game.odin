@@ -93,7 +93,7 @@ init_game :: proc(game: ^Game) {
 	rl.UnloadImage(atlas_image)
 	// Set the shapes drawing texture, this makes rl.DrawRectangleRec etc use the atlas
 	rl.SetShapesTexture(atlas, SHAPES_TEXTURE_RECT)
-	game.font = load_atlased_font()
+	game.font = load_atlased_font(.Dtm_Mono)
 
 	//box2d init
 	game.world_id = b2.CreateWorld(b2.DefaultWorldDef())
@@ -163,12 +163,12 @@ start_game :: proc(game: ^Game) {
 //
 // The set of available glyphs is governed by `LETTERS_IN_FONT` in `atlas_builder.odin`
 // The font used is governed by `FONT_FILENAME` in `atlas_builder.odin`
-load_atlased_font :: proc() -> rl.Font {
-	num_glyphs := len(atlas_glyphs)
+load_atlased_font :: proc(font_name: Atlas_Font_Name) -> rl.Font {
+	num_glyphs := len(LETTERS_IN_FONT)
 	font_rects := make([]Rect, num_glyphs)
 	glyphs := make([]rl.GlyphInfo, num_glyphs)
 
-	for ag, idx in atlas_glyphs {
+	for ag, idx in atlas_fonts[font_name] {
 		font_rects[idx] = ag.rect
 		glyphs[idx] = {
 			value    = ag.value,
