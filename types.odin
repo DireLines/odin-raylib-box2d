@@ -14,20 +14,37 @@ ScreenConversion :: struct {
 	screen_height: f32,
 }
 
+RenderLayer :: enum i8 {
+	Default = 0,
+	Lowest  = -128,
+	Highest = 127,
+}
+
 Game :: struct {
 	window_width:  i32,
 	window_height: i32,
 	objects:       #soa[dynamic]GameObject,
 	textures:      map[string]rl.Texture,
 	fonts:         map[Font_Name]rl.Font,
-	scripts:       [NUM_SCRIPT_EXECUTION_LAYERS][dynamic]Script,
-	sprite_layers: [NUM_SPRITE_RENDERING_LAYERS][dynamic]^GameObject,
+	scripts:       [NUM_SCRIPT_EXECUTION_LAYERS][dynamic]GameObjectId,
+	render_layers: [NUM_SPRITE_RENDERING_LAYERS][dynamic]GameObjectId,
 	start_tick:    time.Tick,
 	frame_counter: u64,
 	world_id:      b2.WorldId,
 	paused:        bool,
 }
 
+Transform :: struct {
+	position: vec2,
+	scale:    vec2,
+	pivot:    vec2,
+	rotation: f32,
+}
+
+BodyInfo :: union {
+	b2.BodyId, //box2d handle - box2d handles transform for physics simulated objects
+	Transform, //we handle transform for other objects
+}
 Component :: enum {
 	Transform,
 	Rigidbody,
@@ -43,7 +60,7 @@ GameObject :: struct {
 	component_set: bit_set[Component],
 	parent:        Maybe(GameObjectId),
 	children:      []GameObjectId,
-	body_id:       b2.BodyId, //box2d handle - box2d handles transform / physics
+	body_info:     BodyInfo,
 	sprite:        Sprite,
 	script:        Script,
 }
@@ -53,11 +70,13 @@ SpriteTexture :: union {
 }
 Sprite :: struct {
 	file:    string,
-	z:       f32, // rendering order
+	layer:   i8, //rendering order
 	color:   rl.Color,
 	texture: SpriteTexture,
 }
+
 Script :: struct {
+	execution_layer:    i8, //execution order
 	awake:              proc(self_index: int, game: ^Game),
 	start:              proc(self_index: int, game: ^Game),
 	update:             proc(self_index: int, game: ^Game),

@@ -27,8 +27,17 @@ draw_object :: proc(obj: GameObject) {
 	case rl.Texture:
 		b2_size = {f32(tex.width), f32(tex.height)} / PIXELS_PER_TILE
 	}
-	p := b2.Body_GetWorldPoint(obj.body_id, {-0.5 * b2_size.x, 0.5 * b2_size.y})
-	radians := b2.Body_GetRotation(obj.body_id)
+	p: vec2
+	rot_degrees: f32
+	switch body in obj.body_info {
+	case b2.BodyId:
+		p = b2.Body_GetWorldPoint(body, {-0.5 * b2_size.x, 0.5 * b2_size.y})
+		radians := b2.Body_GetRotation(body)
+		rot_degrees = -rl.RAD2DEG * b2.Rot_GetAngle(radians)
+	case Transform:
+		p = body.position
+		rot_degrees = -rl.RAD2DEG * body.rotation
+	}
 
 	ps := convert_world_to_screen(p, cv)
 
@@ -37,23 +46,10 @@ draw_object :: proc(obj: GameObject) {
 		source := tex.rect
 		texture_scale := cv.scale / PIXELS_PER_TILE
 		dest := Rect{ps.x, ps.y, source.width * texture_scale, source.height * texture_scale}
-		rl.DrawTexturePro(
-			atlas,
-			source,
-			dest,
-			{0, 0},
-			-rl.RAD2DEG * b2.Rot_GetAngle(radians),
-			obj.sprite.color,
-		)
+		rl.DrawTexturePro(atlas, source, dest, {0, 0}, rot_degrees, obj.sprite.color)
 	case rl.Texture:
 		texture_scale := cv.scale / PIXELS_PER_TILE
-		rl.DrawTextureEx(
-			tex,
-			ps,
-			-rl.RAD2DEG * b2.Rot_GetAngle(radians),
-			texture_scale,
-			obj.sprite.color,
-		)
+		rl.DrawTextureEx(tex, ps, rot_degrees, texture_scale, obj.sprite.color)
 	}
 
 }
@@ -76,6 +72,25 @@ unload_texture :: proc(game: ^Game, filename: string) {
 		rl.UnloadTexture(texture)
 	}
 }
+
+get_font :: proc(game: ^Game, font_name: Font_Name) -> rl.Font {
+	font, ok := game.fonts[font_name]
+	if ok {
+		return font
+	}
+	return load_font(game, font_name)
+}
+load_font :: proc(game: ^Game, font_name: Font_Name) -> rl.Font {
+	font := load_atlased_font(font_name)
+	game.fonts[font_name] = font
+	return font
+}
+unload_font :: proc(game: ^Game, font_name: Font_Name) {
+	font, ok := game.fonts[font_name]
+	if ok {
+		delete_atlased_font(font)
+	}
+}
 init_game :: proc(game: ^Game) {
 	game.window_width = WINDOW_WIDTH
 	game.window_height = WINDOW_HEIGHT
@@ -93,7 +108,7 @@ init_game :: proc(game: ^Game) {
 	rl.UnloadImage(atlas_image)
 	// Set the shapes drawing texture, this makes rl.DrawRectangleRec etc use the atlas
 	rl.SetShapesTexture(atlas, SHAPES_TEXTURE_RECT)
-	game.fonts[MAIN_FONT] = load_atlased_font(MAIN_FONT)
+	get_font(game, MAIN_FONT)
 
 	//box2d init
 	game.world_id = b2.CreateWorld(b2.DefaultWorldDef())
@@ -109,8 +124,10 @@ deinit_game :: proc(game: ^Game) {
 	}
 	rl.CloseWindow()
 }
+
 add_object :: proc(game: ^Game, obj: GameObject) {
 	append_soa(&game.objects, obj)
+	append(&game.render_layers[obj.sprite.layer], GameObjectId(len(game.objects) - 1))
 }
 
 render :: proc(game: ^Game) {
@@ -119,15 +136,18 @@ render :: proc(game: ^Game) {
 	defer rl.EndDrawing()
 	darkgray := rl.Color{32, 32, 30, 255}
 	rl.ClearBackground(darkgray)
-	for &obj in game.objects {
-		draw_object(obj)
+	for layer, i in game.render_layers {
+		for obj_id in layer {
+			obj := game.objects[obj_id]
+			draw_object(obj)
+		}
 	}
 	if game.paused {
 		font_size :: ATLAS_FONT_SIZE
 		rl.DrawTextEx(
-			game.fonts[MAIN_FONT],
-			"~~paused~~",
-			{f32((game.window_width - rl.MeasureText("~~paused~~", font_size)) / 2), 100},
+			get_font(game, MAIN_FONT),
+			"~~PAUSED~~",
+			{f32((game.window_width - rl.MeasureText("~~PAUSED~~", font_size)) / 2), 100},
 			font_size,
 			0,
 			rl.WHITE,

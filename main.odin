@@ -11,9 +11,9 @@ WINDOW_WIDTH :: 1280 * BASE_WINDOW_WIDTH
 WINDOW_HEIGHT :: 720 * BASE_WINDOW_WIDTH
 PIXELS_PER_TILE :: 128
 TILE_SCALE: f32 : 30.0
-MAIN_FONT :: Font_Name.Lora_Variable_Font_Wght
-NUM_SPRITE_RENDERING_LAYERS :: 64
-NUM_SCRIPT_EXECUTION_LAYERS :: 64
+MAIN_FONT :: Font_Name.Minecraft
+NUM_SPRITE_RENDERING_LAYERS :: 256
+NUM_SCRIPT_EXECUTION_LAYERS :: 256
 
 //screen transformation
 cv :: ScreenConversion{TILE_SCALE, f32(WINDOW_WIDTH), f32(WINDOW_HEIGHT)}
@@ -45,6 +45,7 @@ initialize :: proc(game: ^Game) {
 			{f32(1 * x - 10) * tile_spacing, -4.0 + tile_spacing * f32(y + 7)},
 			tex,
 		)
+		obj.sprite.layer = i8(y % 5)
 		add_object(game, obj)
 	}
 }
