@@ -1,0 +1,22 @@
+typical game stuff
+player
+main camera
+main menu
+    new game
+    settings
+        volume slider
+        sfx slider
+    quit
+pause menu
+    resume
+    settings
+        volume slider
+        sfx slider
+    end game
+scene spawning
+2d stuff
+    render layers
+    top down
+        walls
+        enemies
+        bullets

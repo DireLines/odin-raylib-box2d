@@ -20,6 +20,8 @@ Game :: struct {
 	objects:       #soa[dynamic]GameObject,
 	textures:      map[string]rl.Texture,
 	fonts:         map[Font_Name]rl.Font,
+	scripts:       [NUM_SCRIPT_EXECUTION_LAYERS][dynamic]Script,
+	sprite_layers: [NUM_SPRITE_RENDERING_LAYERS][dynamic]^GameObject,
 	start_tick:    time.Tick,
 	frame_counter: u64,
 	world_id:      b2.WorldId,
