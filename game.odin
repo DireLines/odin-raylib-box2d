@@ -127,7 +127,7 @@ deinit_game :: proc(game: ^Game) {
 
 add_object :: proc(game: ^Game, obj: GameObject) {
 	append_soa(&game.objects, obj)
-	append(&game.render_layers[obj.sprite.layer], GameObjectId(len(game.objects) - 1))
+	append(&game.render_layers[u8(obj.sprite.layer) + 128], GameObjectId(len(game.objects) - 1))
 }
 
 render :: proc(game: ^Game) {

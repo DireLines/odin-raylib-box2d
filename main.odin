@@ -10,7 +10,7 @@ BASE_WINDOW_WIDTH :: 2
 WINDOW_WIDTH :: 1280 * BASE_WINDOW_WIDTH
 WINDOW_HEIGHT :: 720 * BASE_WINDOW_WIDTH
 PIXELS_PER_TILE :: 128
-TILE_SCALE: f32 : 30.0
+TILE_SCALE: f32 : 20.0
 MAIN_FONT :: Font_Name.Minecraft
 NUM_SPRITE_RENDERING_LAYERS :: 256
 NUM_SCRIPT_EXECUTION_LAYERS :: 256
@@ -39,13 +39,26 @@ initialize :: proc(game: ^Game) {
 	for i in 0 ..< 6000 {
 		x := i % num_box_rows
 		y := i / num_box_rows + 2
+		tex := atlas_textures[.Ground]
+		obj := make_display_obj_from_tex(
+			game,
+			{f32(1 * x - 10) * tile_spacing, -4.0 + tile_spacing * f32(y + 7)},
+			tex,
+		)
+		obj.sprite.layer = i8(RenderLayer.Lowest)
+		add_object(game, obj)
+	}
+
+	for i in 0 ..< 6000 {
+		x := i % num_box_rows
+		y := i / num_box_rows + 2
 		tex := atlas_textures[rand.choice_enum(Texture_Name)]
 		obj := make_physical_obj_from_tex(
 			game,
 			{f32(1 * x - 10) * tile_spacing, -4.0 + tile_spacing * f32(y + 7)},
 			tex,
 		)
-		obj.sprite.layer = i8(y % 5)
+		obj.sprite.layer = i8(rand.int31())
 		add_object(game, obj)
 	}
 }

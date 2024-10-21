@@ -36,3 +36,15 @@ make_physical_obj_from_tex :: proc(game: ^Game, pos: vec2, tex: Atlas_Texture) -
 	shape_id := b2.CreatePolygonShape(body_id, shape_def, tile_polygon)
 	return obj
 }
+
+make_display_obj_from_tex :: proc(game: ^Game, pos: vec2, tex: Atlas_Texture) -> GameObject {
+	obj := GameObject{}
+	obj.sprite.texture = tex
+	obj.sprite.color = rl.WHITE
+	box_dim: vec2 = {tex.rect.width, tex.rect.height} * (0.5 / PIXELS_PER_TILE)
+	obj.body_info = Transform {
+		position = pos,
+		scale    = {(0.5 / PIXELS_PER_TILE), (0.5 / PIXELS_PER_TILE)},
+	}
+	return obj
+}
