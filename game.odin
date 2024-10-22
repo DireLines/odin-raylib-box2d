@@ -35,7 +35,7 @@ draw_object :: proc(obj: GameObject) {
 		radians := b2.Body_GetRotation(body)
 		rot_degrees = -rl.RAD2DEG * b2.Rot_GetAngle(radians)
 	case Transform:
-		p = body.position
+		p = body.position + body.pivot
 		rot_degrees = -rl.RAD2DEG * body.rotation
 	}
 
@@ -89,6 +89,15 @@ unload_font :: proc(game: ^Game, font_name: Font_Name) {
 	font, ok := game.fonts[font_name]
 	if ok {
 		delete_atlased_font(font)
+	}
+}
+set_object_pos :: proc(obj: GameObject, pos: vec2) {
+	switch &body in obj.body_info {
+	case b2.BodyId:
+		current := b2.Body_GetTransform(body)
+		b2.Body_SetTransform(body, pos, current.q)
+	case Transform:
+		body.position = pos
 	}
 }
 init_game :: proc(game: ^Game) {
@@ -157,7 +166,9 @@ render :: proc(game: ^Game) {
 }
 
 start_game :: proc(game: ^Game) {
+	init_timer := timer()
 	initialize(game) //custom init logic
+	init_timer->time("init")
 	for !rl.WindowShouldClose() {
 		timer := timer()
 		dt := rl.GetFrameTime()
