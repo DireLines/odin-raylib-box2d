@@ -44,6 +44,7 @@ make_display_obj_from_tex :: proc(game: ^Game, pos: vec2, tex: Atlas_Texture) ->
 	box_dim: vec2 = {tex.rect.width, tex.rect.height} / PIXELS_PER_TILE
 	obj.body_info = Transform {
 		position = pos,
+		rotation = 90,
 		scale    = box_dim,
 		pivot    = {-box_dim.x / 2, box_dim.y / 2},
 	}
