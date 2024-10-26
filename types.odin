@@ -97,3 +97,10 @@ System :: struct {
 	addObject:         proc(system: ^System, game: ^Game, obj_index: int),
 	removeObject:      proc(system: ^System, game: ^Game, obj_index: int),
 }
+
+PhysicsType :: enum {
+	None,
+	Static,
+	Kinematic,
+	Dynamic,
+}

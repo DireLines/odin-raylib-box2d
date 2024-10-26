@@ -6,12 +6,11 @@ import b2 "vendor:box2d"
 import rl "vendor:raylib"
 
 // manual procs for constructing objects
-
-physical_obj_from_atlas_texture :: proc(
+object_from_atlas_texture :: proc(
 	game: ^Game,
 	texture: Atlas_Texture,
 	transform: Transform,
-	body_type: b2.BodyType = .staticBody,
+	physics_type: PhysicsType = .Static,
 ) -> GameObject {
 	scale := transform.scale
 	//zero value does not make sense here - assume you meant normal scale
@@ -20,6 +19,17 @@ physical_obj_from_atlas_texture :: proc(
 	}
 	obj := GameObject{}
 	body_def := b2.DefaultBodyDef()
+	body_type: b2.BodyType
+	switch physics_type {
+	case .None:
+		body_def.isEnabled = false
+	case .Static:
+		body_type = .staticBody
+	case .Kinematic:
+		body_type = .kinematicBody
+	case .Dynamic:
+		body_type = .dynamicBody
+	}
 	body_def.type = body_type
 	body_def.position = transform.position
 	rot := rl.DEG2RAD * transform.rotation
