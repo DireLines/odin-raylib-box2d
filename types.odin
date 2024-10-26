@@ -41,8 +41,12 @@ Transform :: struct {
 	rotation: f32,
 }
 
+BodyHandle :: struct {
+	id:    b2.BodyId,
+	scale: vec2,
+}
 BodyInfo :: union {
-	b2.BodyId, //box2d handle - box2d handles transform for physics simulated objects
+	BodyHandle, //box2d handle - box2d handles transform for physics simulated objects
 	Transform, //we handle transform for other objects
 }
 Component :: enum {

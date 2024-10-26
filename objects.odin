@@ -1,51 +1,66 @@
 package main
 
+import "core:math"
 import b2 "vendor:box2d"
 import rl "vendor:raylib"
 
 // manual procs for constructing objects
 
-make_ground_obj :: proc(game: ^Game, pos: vec2) -> GameObject {
-	obj := GameObject{}
-	tex := atlas_textures[.Ground]
-	body_def := b2.DefaultBodyDef()
-	body_def.position = pos
-	body_id := b2.CreateBody(game.world_id, body_def)
-	obj.body_info = body_id
-	obj.sprite.texture = tex
-	obj.sprite.color = rl.WHITE
-	shape_def := b2.DefaultShapeDef()
-	box_dim: vec2 = {tex.rect.width, tex.rect.height} * (0.5 / PIXELS_PER_TILE)
-	tile_polygon := b2.MakeBox(box_dim.x, box_dim.y)
-	shape_id := b2.CreatePolygonShape(body_id, shape_def, tile_polygon)
-	return obj
-}
-make_physical_obj_from_tex :: proc(game: ^Game, pos: vec2, tex: Atlas_Texture) -> GameObject {
+physical_obj_from_atlas_texture :: proc(
+	game: ^Game,
+	transform: Transform,
+	texture: Atlas_Texture,
+	body_type: b2.BodyType = .staticBody,
+) -> GameObject {
+	scale := transform.scale
+	//zero value does not make sense here
+	if scale == {0, 0} {
+		scale = {1, 1}
+	}
 	obj := GameObject{}
 	body_def := b2.DefaultBodyDef()
-	body_def.type = .dynamicBody
-	body_def.position = pos
+	body_def.type = body_type
+	body_def.position = transform.position
+	rot := rl.DEG2RAD * transform.rotation
+	body_def.rotation = {
+		s = math.sin(rot),
+		c = math.cos(rot),
+	}
 	body_id := b2.CreateBody(game.world_id, body_def)
-	obj.body_info = body_id
-	obj.sprite.texture = tex
+	obj.body_info = BodyHandle {
+		id    = body_id,
+		scale = scale,
+	}
+	obj.sprite.texture = texture
 	obj.sprite.color = rl.WHITE
 	shape_def := b2.DefaultShapeDef()
-	shape_def.restitution = 0.01
-	box_dim: vec2 = {tex.rect.width, tex.rect.height} * (0.5 / PIXELS_PER_TILE)
+	box_dim: vec2 =
+		{texture.rect.width * scale.x, texture.rect.height * scale.y} * (0.5 / PIXELS_PER_TILE)
 	tile_polygon := b2.MakeBox(box_dim.x, box_dim.y)
 	shape_id := b2.CreatePolygonShape(body_id, shape_def, tile_polygon)
 	return obj
 }
 
-make_display_obj_from_tex :: proc(game: ^Game, pos: vec2, tex: Atlas_Texture) -> GameObject {
+display_obj_from_atlas_texture :: proc(
+	game: ^Game,
+	transform: Transform,
+	texture: Atlas_Texture,
+) -> GameObject {
+	scale := transform.scale
+	//zero value does not make sense here
+	if scale == {0, 0} {
+		scale = {1, 1}
+	}
 	obj := GameObject{}
-	obj.sprite.texture = tex
+	obj.sprite.texture = texture
 	obj.sprite.color = rl.WHITE
-	box_dim: vec2 = {tex.rect.width, tex.rect.height} / PIXELS_PER_TILE
+	box_dim: vec2 =
+		{texture.rect.width * transform.scale.x, texture.rect.height * transform.scale.y} /
+		PIXELS_PER_TILE
 	obj.body_info = Transform {
-		position = pos,
-		rotation = 90,
-		scale    = box_dim,
+		position = transform.position,
+		rotation = transform.rotation,
+		scale    = scale,
 		pivot    = {-box_dim.x / 2, box_dim.y / 2},
 	}
 	return obj

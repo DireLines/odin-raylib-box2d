@@ -29,14 +29,17 @@ draw_object :: proc(obj: GameObject) {
 	}
 	p: vec2
 	rot_degrees: f32
+	render_scale: vec2
 	switch body in obj.body_info {
-	case b2.BodyId:
-		p = b2.Body_GetWorldPoint(body, {-0.5 * b2_size.x, 0.5 * b2_size.y})
-		radians := b2.Body_GetRotation(body)
+	case BodyHandle:
+		p = b2.Body_GetWorldPoint(body.id, {-0.5 * b2_size.x, 0.5 * b2_size.y})
+		radians := b2.Body_GetRotation(body.id)
 		rot_degrees = -rl.RAD2DEG * b2.Rot_GetAngle(radians)
+		render_scale = body.scale
 	case Transform:
 		p = body.position + body.pivot
 		rot_degrees = -rl.RAD2DEG * body.rotation
+		render_scale = body.scale
 	}
 
 	ps := convert_world_to_screen(p, cv)
@@ -44,12 +47,14 @@ draw_object :: proc(obj: GameObject) {
 	switch tex in obj.sprite.texture {
 	case Atlas_Texture:
 		source := tex.rect
-		texture_scale := cv.scale / PIXELS_PER_TILE
-		dest := Rect{ps.x, ps.y, source.width * texture_scale, source.height * texture_scale}
+		texture_scale := cv.scale * render_scale / PIXELS_PER_TILE
+		dest := Rect{ps.x, ps.y, source.width * texture_scale.x, source.height * texture_scale.y}
 		rl.DrawTexturePro(atlas, source, dest, {0, 0}, rot_degrees, obj.sprite.color)
 	case rl.Texture:
-		texture_scale := cv.scale / PIXELS_PER_TILE
-		rl.DrawTextureEx(tex, ps, rot_degrees, texture_scale, obj.sprite.color)
+		source := Rect{0, 0, f32(tex.width), f32(tex.height)}
+		texture_scale := cv.scale * render_scale / PIXELS_PER_TILE
+		dest := Rect{ps.x, ps.y, source.width * texture_scale.x, source.height * texture_scale.y}
+		rl.DrawTexturePro(tex, source, dest, {0, 0}, rot_degrees, obj.sprite.color)
 	}
 
 }
@@ -93,9 +98,9 @@ unload_font :: proc(game: ^Game, font_name: Font_Name) {
 }
 set_object_pos :: proc(obj: GameObject, pos: vec2) {
 	switch &body in obj.body_info {
-	case b2.BodyId:
-		current := b2.Body_GetTransform(body)
-		b2.Body_SetTransform(body, pos, current.q)
+	case BodyHandle:
+		current := b2.Body_GetTransform(body.id)
+		b2.Body_SetTransform(body.id, pos, current.q)
 	case Transform:
 		body.position = pos
 	}
