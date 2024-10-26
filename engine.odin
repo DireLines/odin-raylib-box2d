@@ -17,9 +17,12 @@ ATLAS_DATA :: #load("atlas.png")
 atlas: rl.Texture
 
 
+//screen transformation
+cv :: ScreenConversion{SCREEN_PIXELS_PER_WORLD_UNIT, f32(WINDOW_WIDTH), f32(WINDOW_HEIGHT)}
 convert_world_to_screen :: proc(p: b2.Vec2, cv: ScreenConversion) -> rl.Vector2 {
 	return {cv.scale * p.x + 0.5 * cv.screen_width, 0.5 * cv.screen_height - cv.scale * p.y}
 }
+
 draw_object :: proc(obj: GameObject) {
 	scale: vec2
 	switch body in obj.body_info {
@@ -176,9 +179,7 @@ render :: proc(game: ^Game) {
 }
 
 start_game :: proc(game: ^Game) {
-	init_timer := timer()
 	initialize(game) //custom init logic
-	init_timer->time("init")
 	for !rl.WindowShouldClose() {
 		timer := timer()
 		dt := rl.GetFrameTime()

@@ -15,9 +15,6 @@ MAIN_FONT :: Font_Name.Lora_Variable_Font_Wght
 NUM_SPRITE_RENDERING_LAYERS :: 256
 NUM_SCRIPT_EXECUTION_LAYERS :: 256
 
-//screen transformation
-cv :: ScreenConversion{SCREEN_PIXELS_PER_WORLD_UNIT, f32(WINDOW_WIDTH), f32(WINDOW_HEIGHT)}
-
 //game-specific initialization logic
 initialize :: proc(game: ^Game) {
 	tile_spacing :: 2
