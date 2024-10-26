@@ -1,4 +1,5 @@
 package main
+//game agnostic stuff
 
 import "core:fmt"
 import "core:slice"
@@ -20,26 +21,30 @@ convert_world_to_screen :: proc(p: b2.Vec2, cv: ScreenConversion) -> rl.Vector2 
 	return {cv.scale * p.x + 0.5 * cv.screen_width, 0.5 * cv.screen_height - cv.scale * p.y}
 }
 draw_object :: proc(obj: GameObject) {
+	scale: vec2
+	switch body in obj.body_info {
+	case BodyHandle:
+		scale = body.scale
+	case Transform:
+		scale = body.scale
+	}
 	b2_size: vec2
 	switch tex in obj.sprite.texture {
 	case Atlas_Texture:
-		b2_size = {tex.rect.width, tex.rect.height} / PIXELS_PER_TILE
+		b2_size = {tex.rect.width, tex.rect.height} * scale / PIXELS_PER_TILE
 	case rl.Texture:
-		b2_size = {f32(tex.width), f32(tex.height)} / PIXELS_PER_TILE
+		b2_size = {f32(tex.width), f32(tex.height)} * scale / PIXELS_PER_TILE
 	}
 	p: vec2
 	rot_degrees: f32
-	render_scale: vec2
 	switch body in obj.body_info {
 	case BodyHandle:
 		p = b2.Body_GetWorldPoint(body.id, {-0.5 * b2_size.x, 0.5 * b2_size.y})
 		radians := b2.Body_GetRotation(body.id)
 		rot_degrees = -rl.RAD2DEG * b2.Rot_GetAngle(radians)
-		render_scale = body.scale
 	case Transform:
 		p = body.position + body.pivot
 		rot_degrees = -rl.RAD2DEG * body.rotation
-		render_scale = body.scale
 	}
 
 	ps := convert_world_to_screen(p, cv)
@@ -47,12 +52,12 @@ draw_object :: proc(obj: GameObject) {
 	switch tex in obj.sprite.texture {
 	case Atlas_Texture:
 		source := tex.rect
-		texture_scale := cv.scale * render_scale / PIXELS_PER_TILE
+		texture_scale := cv.scale * scale / PIXELS_PER_TILE
 		dest := Rect{ps.x, ps.y, source.width * texture_scale.x, source.height * texture_scale.y}
 		rl.DrawTexturePro(atlas, source, dest, {0, 0}, rot_degrees, obj.sprite.color)
 	case rl.Texture:
 		source := Rect{0, 0, f32(tex.width), f32(tex.height)}
-		texture_scale := cv.scale * render_scale / PIXELS_PER_TILE
+		texture_scale := cv.scale * scale / PIXELS_PER_TILE
 		dest := Rect{ps.x, ps.y, source.width * texture_scale.x, source.height * texture_scale.y}
 		rl.DrawTexturePro(tex, source, dest, {0, 0}, rot_degrees, obj.sprite.color)
 	}

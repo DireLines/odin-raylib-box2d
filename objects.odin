@@ -1,5 +1,6 @@
 package main
 
+import "core:fmt"
 import "core:math"
 import b2 "vendor:box2d"
 import rl "vendor:raylib"
@@ -8,12 +9,12 @@ import rl "vendor:raylib"
 
 physical_obj_from_atlas_texture :: proc(
 	game: ^Game,
-	transform: Transform,
 	texture: Atlas_Texture,
+	transform: Transform,
 	body_type: b2.BodyType = .staticBody,
 ) -> GameObject {
 	scale := transform.scale
-	//zero value does not make sense here
+	//zero value does not make sense here - assume you meant normal scale
 	if scale == {0, 0} {
 		scale = {1, 1}
 	}
@@ -47,7 +48,7 @@ display_obj_from_atlas_texture :: proc(
 	texture: Atlas_Texture,
 ) -> GameObject {
 	scale := transform.scale
-	//zero value does not make sense here
+	//zero value does not make sense here - assume you meant normal scale
 	if scale == {0, 0} {
 		scale = {1, 1}
 	}

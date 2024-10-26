@@ -36,18 +36,14 @@ Game :: struct {
 
 Transform :: struct {
 	position: vec2,
-	scale:    vec2,
-	pivot:    vec2,
 	rotation: f32,
+	scale:    vec2, //a multiplier on the x and y dims of the texture when rendering or for physics
+	pivot:    vec2,
 }
 
 BodyHandle :: struct {
 	id:    b2.BodyId,
 	scale: vec2,
-}
-BodyInfo :: union {
-	BodyHandle, //box2d handle - box2d handles transform for physics simulated objects
-	Transform, //we handle transform for other objects
 }
 Component :: enum {
 	Transform,
@@ -64,7 +60,10 @@ GameObject :: struct {
 	component_set: bit_set[Component],
 	parent:        Maybe(GameObjectId),
 	children:      []GameObjectId,
-	body_info:     BodyInfo,
+	body_info:     union {
+		BodyHandle, //box2d handle - box2d handles transform for physics simulated objects
+		Transform, //we handle transform for other objects
+	},
 	sprite:        Sprite,
 	script:        Script,
 }
