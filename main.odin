@@ -24,7 +24,7 @@ initialize :: proc(game: ^Game) {
 	//ground
 	ground_width :: 70
 	for i in 0 ..= ground_width {
-		obj := physical_obj_from_atlas_texture(
+		obj := display_obj_from_atlas_texture(
 			game,
 			atlas_textures[.Ground],
 			{
@@ -32,24 +32,36 @@ initialize :: proc(game: ^Game) {
 					f32(1 * i - ground_width / 2) * tile_spacing,
 					-15.5 + (3 * tile_spacing * f32(i % 5)) - 0.5 * tile_spacing,
 				},
+				rotation = 45,
+				scale = {1, 2},
+			},
+		)
+		obj.sprite.color = rl.DARKBROWN
+		phys := physical_obj_from_atlas_texture(
+			game,
+			atlas_textures[.Ground],
+			{
+				position = {
+					f32(1 * i - ground_width / 2) * tile_spacing,
+					-15.5 + (3 * tile_spacing * f32(i % 5)) - 0.5 * tile_spacing,
+				},
+				rotation = 45,
+				scale = {1, 2},
 			},
 		)
 		add_object(game, obj)
+		add_object(game, phys)
 	}
 
 	//boxes
 	num_box_rows :: 21
-	for i in 0 ..< 6 {
+	for i in 0 ..< 6000 {
 		x := i % num_box_rows
 		y := i / num_box_rows + 2
 		obj := physical_obj_from_atlas_texture(
 			game,
 			atlas_textures[.Box],
-			{
-				position = {f32(1 * x - 10) * tile_spacing, -4.0 + tile_spacing * f32(y + 7)},
-				rotation = 90,
-				scale = {3, 1},
-			},
+			{position = {f32(1 * x - 10) * tile_spacing, -4.0 + tile_spacing * f32(y + 7)}},
 			.dynamicBody,
 		)
 		add_object(game, obj)

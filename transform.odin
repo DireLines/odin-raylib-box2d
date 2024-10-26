@@ -53,12 +53,16 @@ scale :: proc {
 	scale_vec2,
 }
 
-apply :: proc(using t: ^Transform) -> mat3 {
+apply :: proc(using t: Transform) -> mat3 {
 	using glm
 	return translate(position) * rotate(radians_f32(rotation)) * scale_vec2(scale)
-
 }
 reverse :: proc(using t: ^Transform) -> (result: mat3) {
 	using glm
 	return scale_vec2(1 / scale) * rotate(radians_f32(-rotation)) * translate(-position)
+}
+
+
+mat_vec_mul :: proc(m: glm.mat3, v: glm.vec2) -> glm.vec2 {
+	return {v.x * m[0, 0] + v.y * m[0, 1] + m[0, 2], v.x * m[1, 0] + v.y * m[1, 1] + m[1, 2]}
 }

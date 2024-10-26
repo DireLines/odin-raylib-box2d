@@ -43,8 +43,8 @@ draw_object :: proc(obj: GameObject) {
 		radians := b2.Body_GetRotation(body.id)
 		rot_degrees = -rl.RAD2DEG * b2.Rot_GetAngle(radians)
 	case Transform:
-		p = body.position + body.pivot
-		rot_degrees = -rl.RAD2DEG * body.rotation
+		p = mat_vec_mul(apply(body), {-0.5, 0.5})
+		rot_degrees = -body.rotation
 	}
 
 	ps := convert_world_to_screen(p, cv)

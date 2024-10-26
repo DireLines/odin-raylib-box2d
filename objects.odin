@@ -44,8 +44,8 @@ physical_obj_from_atlas_texture :: proc(
 
 display_obj_from_atlas_texture :: proc(
 	game: ^Game,
-	transform: Transform,
 	texture: Atlas_Texture,
+	transform: Transform,
 ) -> GameObject {
 	scale := transform.scale
 	//zero value does not make sense here - assume you meant normal scale

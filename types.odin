@@ -35,9 +35,9 @@ Game :: struct {
 }
 
 Transform :: struct {
-	position: vec2,
-	rotation: f32,
-	scale:    vec2, //a multiplier on the x and y dims of the texture when rendering or for physics
+	position: vec2, //position of the CENTER of the object
+	rotation: f32, //DEGREES, not radians
+	scale:    vec2, //multipliers on the x and y dims of the texture when rendering or for physics
 	pivot:    vec2,
 }
 
