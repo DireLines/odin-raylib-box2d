@@ -46,7 +46,8 @@ object_from_atlas_texture :: proc(
 	obj.sprite.color = rl.WHITE
 	shape_def := b2.DefaultShapeDef()
 	box_dim: vec2 =
-		{texture.rect.width * scale.x, texture.rect.height * scale.y} * (0.5 / PIXELS_PER_TILE)
+		{texture.rect.width * scale.x, texture.rect.height * scale.y} *
+		(0.5 / TEXTURE_PIXELS_PER_WORLD_UNIT)
 	tile_polygon := b2.MakeBox(box_dim.x, box_dim.y)
 	shape_id := b2.CreatePolygonShape(body_id, shape_def, tile_polygon)
 	return obj
@@ -67,7 +68,7 @@ display_obj_from_atlas_texture :: proc(
 	obj.sprite.color = rl.WHITE
 	box_dim: vec2 =
 		{texture.rect.width * transform.scale.x, texture.rect.height * transform.scale.y} /
-		PIXELS_PER_TILE
+		TEXTURE_PIXELS_PER_WORLD_UNIT
 	obj.body_info = Transform {
 		position = transform.position,
 		rotation = transform.rotation,

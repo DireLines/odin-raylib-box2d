@@ -31,9 +31,9 @@ draw_object :: proc(obj: GameObject) {
 	b2_size: vec2
 	switch tex in obj.sprite.texture {
 	case Atlas_Texture:
-		b2_size = {tex.rect.width, tex.rect.height} * scale / PIXELS_PER_TILE
+		b2_size = {tex.rect.width, tex.rect.height} * scale / TEXTURE_PIXELS_PER_WORLD_UNIT
 	case rl.Texture:
-		b2_size = {f32(tex.width), f32(tex.height)} * scale / PIXELS_PER_TILE
+		b2_size = {f32(tex.width), f32(tex.height)} * scale / TEXTURE_PIXELS_PER_WORLD_UNIT
 	}
 	p: vec2
 	rot_degrees: f32
@@ -52,12 +52,12 @@ draw_object :: proc(obj: GameObject) {
 	switch tex in obj.sprite.texture {
 	case Atlas_Texture:
 		source := tex.rect
-		texture_scale := cv.scale * scale / PIXELS_PER_TILE
+		texture_scale := cv.scale * scale / TEXTURE_PIXELS_PER_WORLD_UNIT
 		dest := Rect{ps.x, ps.y, source.width * texture_scale.x, source.height * texture_scale.y}
 		rl.DrawTexturePro(atlas, source, dest, {0, 0}, rot_degrees, obj.sprite.color)
 	case rl.Texture:
 		source := Rect{0, 0, f32(tex.width), f32(tex.height)}
-		texture_scale := cv.scale * scale / PIXELS_PER_TILE
+		texture_scale := cv.scale * scale / TEXTURE_PIXELS_PER_WORLD_UNIT
 		dest := Rect{ps.x, ps.y, source.width * texture_scale.x, source.height * texture_scale.y}
 		rl.DrawTexturePro(tex, source, dest, {0, 0}, rot_degrees, obj.sprite.color)
 	}
