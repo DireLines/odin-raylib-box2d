@@ -55,7 +55,6 @@ initialize :: proc(game: ^Game) {
 		)
 		add_object(game, obj)
 	}
-	game.paused = true
 }
 
 //entrypoint
