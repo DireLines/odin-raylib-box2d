@@ -43,7 +43,7 @@ draw_object :: proc(obj: GameObject) {
 		radians := b2.Body_GetRotation(body.id)
 		rot_degrees = -rl.RAD2DEG * b2.Rot_GetAngle(radians)
 	case Transform:
-		p = mat_vec_mul(apply(body), {-0.5, 0.5})
+		p = mat_vec_mul(apply(body), body.pivot)
 		rot_degrees = -body.rotation
 	}
 

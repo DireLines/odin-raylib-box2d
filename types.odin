@@ -38,7 +38,7 @@ Transform :: struct {
 	position: vec2, //position of the CENTER of the object
 	rotation: f32, //DEGREES, not radians
 	scale:    vec2, //multipliers on the x and y dims of the texture when rendering or for physics
-	pivot:    vec2,
+	pivot:    vec2, //where is the center of the object in local coordinates relative to the origin?
 }
 
 BodyHandle :: struct {

@@ -32,8 +32,7 @@ initialize :: proc(game: ^Game) {
 					f32(1 * i - ground_width / 2) * tile_spacing,
 					-15.5 + (3 * tile_spacing * f32(i % 5)) - 0.5 * tile_spacing,
 				},
-				rotation = 45,
-				scale = {1, 2},
+				rotation = 90,
 			},
 		)
 		obj.sprite.color = rl.DARKBROWN
@@ -46,7 +45,6 @@ initialize :: proc(game: ^Game) {
 					-15.5 + (3 * tile_spacing * f32(i % 5)) - 0.5 * tile_spacing,
 				},
 				rotation = 45,
-				scale = {1, 2},
 			},
 		)
 		add_object(game, obj)

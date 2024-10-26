@@ -62,7 +62,7 @@ display_obj_from_atlas_texture :: proc(
 		position = transform.position,
 		rotation = transform.rotation,
 		scale    = scale,
-		pivot    = {-box_dim.x / 2, box_dim.y / 2},
+		pivot    = {-0.5, 0.5},
 	}
 	return obj
 }
