@@ -40,23 +40,20 @@ initialize :: proc(game: ^Game) {
 
 	//boxes
 	num_box_rows :: 21
-	for i in 0 ..< 10000 {
+	for i in 0 ..< 6000 {
 		x := i % num_box_rows
 		y := i / num_box_rows + 2
 		obj := object_from_atlas_texture(
 			game,
 			atlas_textures[.Box],
-			{position = {f32(1 * x - 10) * tile_spacing, -4.0 + tile_spacing * f32(y + 7)}},
+			{
+				position = {f32(1 * x - 10) * tile_spacing, -4.0 + tile_spacing * f32(y + 7)},
+				rotation = rand.float32() * 360,
+				scale = {rand.float32_normal(1, 0.2), rand.float32_normal(1, 0.2)},
+			},
 			.Dynamic,
 		)
-		disp := object_from_atlas_texture(
-			game,
-			atlas_textures[.Box],
-			{position = {f32(1 * x - 10) * tile_spacing, -4.0 + tile_spacing * f32(y + 7)}},
-			.None,
-		)
 		add_object(game, obj)
-		add_object(game, disp)
 	}
 }
 
