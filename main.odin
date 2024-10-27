@@ -15,6 +15,8 @@ MAIN_FONT :: Font_Name.Lora_Variable_Font_Wght
 NUM_SPRITE_RENDERING_LAYERS :: 256
 NUM_SCRIPT_EXECUTION_LAYERS :: 256
 
+cam := Transform{}
+
 //game-specific initialization logic
 initialize :: proc(game: ^Game) {
 	tile_spacing :: 2
@@ -51,6 +53,25 @@ initialize :: proc(game: ^Game) {
 		)
 		add_object(game, obj)
 	}
+}
+
+//game-specific update logic
+update :: proc(game: ^Game, contacts: b2.ContactEvents, dt: f32) {
+	cam_speed: f32 = 1000
+	cam_vel: vec2 = {0, 0}
+	if rl.IsKeyDown(.W) {
+		cam_vel += {0, dt}
+	}
+	if rl.IsKeyDown(.A) {
+		cam_vel += {-dt, 0}
+	}
+	if rl.IsKeyDown(.S) {
+		cam_vel += {0, -dt}
+	}
+	if rl.IsKeyDown(.D) {
+		cam_vel += {dt, 0}
+	}
+	cam.position += cam_vel * cam_speed
 }
 
 //entrypoint

@@ -20,7 +20,10 @@ atlas: rl.Texture
 //screen transformation
 cv :: ScreenConversion{SCREEN_PIXELS_PER_WORLD_UNIT, f32(WINDOW_WIDTH), f32(WINDOW_HEIGHT)}
 convert_world_to_screen :: proc(p: b2.Vec2, cv: ScreenConversion) -> rl.Vector2 {
-	return {cv.scale * p.x + 0.5 * cv.screen_width, 0.5 * cv.screen_height - cv.scale * p.y}
+	return {
+		cv.scale * p.x + 0.5 * cv.screen_width - cam.position.x,
+		0.5 * cv.screen_height - cv.scale * p.y + cam.position.y,
+	}
 }
 
 draw_object :: proc(obj: GameObject) {
@@ -194,6 +197,8 @@ start_game :: proc(game: ^Game) {
 			// if num_contacts > 0 {
 			// 	fmt.println("num contacts this frame:", num_contacts)
 			// }
+			update(game, contacts, dt)
+			timer->time("update")
 		}
 		render(game)
 	}
