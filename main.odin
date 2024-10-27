@@ -1,6 +1,7 @@
 package main
 
 import "core:fmt"
+import "core:math"
 import "core:math/rand"
 import b2 "vendor:box2d"
 import rl "vendor:raylib"
@@ -15,6 +16,7 @@ MAIN_FONT :: Font_Name.Lora_Variable_Font_Wght
 NUM_SPRITE_RENDERING_LAYERS :: 256
 NUM_SCRIPT_EXECUTION_LAYERS :: 256
 
+cam_target := Transform{}
 cam := Transform{}
 
 //game-specific initialization logic
@@ -71,7 +73,8 @@ update :: proc(game: ^Game, contacts: b2.ContactEvents, dt: f32) {
 	if rl.IsKeyDown(.D) {
 		cam_vel += {dt, 0}
 	}
-	cam.position += cam_vel * cam_speed
+	cam_target.position += cam_vel * cam_speed
+	cam.position = math.lerp(cam.position, cam_target.position, f32(0.1))
 }
 
 //entrypoint
