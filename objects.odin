@@ -53,7 +53,7 @@ object_from_atlas_texture :: proc(
 	return obj
 }
 
-display_obj_from_atlas_texture :: proc(
+display_object_from_atlas_texture :: proc(
 	game: ^Game,
 	texture: Atlas_Texture,
 	transform: Transform,

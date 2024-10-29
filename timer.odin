@@ -17,10 +17,10 @@ timer :: proc(loc := #caller_location) -> Timer {
 				elapsed := time.tick_since(state.start)
 				prefix := state.loc.procedure
 				fmt.printf(
-					"%v: %v took %v millis\n",
+					"%v: %v took %.10f micros\n",
 					prefix,
 					msg,
-					time.duration_milliseconds(elapsed),
+					time.duration_microseconds(elapsed),
 				)
 				state.start = time.tick_now()
 			}
