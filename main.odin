@@ -18,9 +18,17 @@ NUM_SCRIPT_EXECUTION_LAYERS :: 256
 
 cam_target := Transform{}
 cam := Transform{}
+player: GameObject
 
 //game-specific initialization logic
 initialize :: proc(game: ^Game) {
+	player = object_from_atlas_texture(
+		game,
+		atlas_textures[.Puzzle_Piece_100],
+		{position = {0, 0}},
+		.Dynamic,
+	)
+	add_object(game, player)
 	tile_spacing :: 2
 	//ground
 	ground_width :: 70
@@ -46,7 +54,7 @@ initialize :: proc(game: ^Game) {
 		y := i / num_box_rows + 2
 		obj := object_from_atlas_texture(
 			game,
-			atlas_textures[rand.choice_enum(Texture_Name)],
+			atlas_textures[.Box],
 			{
 				position = {f32(1 * x - 10) * tile_spacing, -4.0 + tile_spacing * f32(y + 7)},
 				rotation = rand.float32() * 360,
@@ -59,22 +67,24 @@ initialize :: proc(game: ^Game) {
 
 //game-specific update logic
 update :: proc(game: ^Game, contacts: b2.ContactEvents, dt: f32) {
-	cam_speed: f32 = 1000
-	cam_vel: vec2 = {0, 0}
+	player_speed: f32 = 10
+	player_movement: vec2 = {0, 0}
 	if rl.IsKeyDown(.W) {
-		cam_vel += {0, dt}
+		player_movement += {0, dt}
 	}
 	if rl.IsKeyDown(.A) {
-		cam_vel += {-dt, 0}
+		player_movement += {-dt, 0}
 	}
 	if rl.IsKeyDown(.S) {
-		cam_vel += {0, -dt}
+		player_movement += {0, -dt}
 	}
 	if rl.IsKeyDown(.D) {
-		cam_vel += {dt, 0}
+		player_movement += {dt, 0}
 	}
-	cam_target.position += cam_vel * cam_speed
-	cam.position = math.lerp(cam.position, cam_target.position, f32(0.1))
+	player_pos := get_object_pos(player)
+	set_object_pos(player, player_pos + player_movement * player_speed)
+	cam_target.position = player_pos * SCREEN_PIXELS_PER_WORLD_UNIT
+	cam.position = math.lerp(cam.position, cam_target.position, f32(0.16))
 }
 
 //entrypoint

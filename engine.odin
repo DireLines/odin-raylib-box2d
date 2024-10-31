@@ -107,6 +107,15 @@ unload_font :: proc(game: ^Game, font_name: Font_Name) {
 		delete_atlased_font(font)
 	}
 }
+get_object_pos :: proc(obj: GameObject) -> (pos: vec2) {
+	switch &body in obj.body_info {
+	case BodyHandle:
+		pos = b2.Body_GetTransform(body.id).p
+	case Transform:
+		pos = body.position
+	}
+	return pos
+}
 set_object_pos :: proc(obj: GameObject, pos: vec2) {
 	switch &body in obj.body_info {
 	case BodyHandle:
