@@ -61,7 +61,6 @@ TEXTURES_DIR :: "textures"
 // The letters to extract from the font
 LETTERS_IN_FONT :: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890,.?!@#$%^&*()_+-=`~[]{}<>|/;:'"
 NUM_LETTERS_PER_FONT :: len(LETTERS_IN_FONT)
-letters := utf8.string_to_runes(LETTERS_IN_FONT)
 
 // The folder of fonts to extract letters from
 FONTS_DIR :: "fonts"
@@ -250,6 +249,7 @@ load_font :: proc(filename: string) -> Font {
 	font := Font {
 		name = asset_name(filename),
 	}
+	letters := utf8.string_to_runes(LETTERS_IN_FONT)
 
 	for r, r_idx in letters {
 		w, h, ox, oy: c.int
